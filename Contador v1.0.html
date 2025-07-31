@@ -1,0 +1,592 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contador de Pacientes</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            background-color: #f9f9f9;
+        }
+        .table-container {
+            max-height: 300px;
+            overflow-y: auto;
+            border: 1px solid #ccc;
+            padding: 10px;
+            margin: 20px 0;
+            width: 100%;
+            max-width: 1000px;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        th, td {
+            padding: 8px;
+            text-align: left;
+        }
+        td {
+            max-width: 250px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        .hidden {
+            display: none;
+        }
+        .no-wrap {
+            white-space: nowrap;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Seção para selecionar a unidade -->
+    <div id="unitSelection">
+        <h2>Selecione a Unidade:</h2>
+        <select id="unitSelect" class="form-control">
+            <option value="">Escolha sua unidade</option>
+            <option value="1">Unidade 01 - Central, Juazeiro do Norte</option>
+            <option value="3">Unidade 03 - Crato</option>
+            <option value="5">Unidade 05 - Novo Juazeiro</option>
+            <option value="6">Unidade 06 - Milagres</option>
+            <option value="10">Unidade 10 - Office Cariri</option>
+            <option value="12">Unidade 12 - Caririaçu</option>
+            <option value="13">Unidade 13 - Campos Sales</option>
+            <option value="14">Unidade 14 - Nova Olinda</option>
+            <option value="23">Unidade 23 - Salesiano</option>
+            <option value="62">Unidade 62 - Clemir Arrais</option>
+            <option value="88">Unidade 88 - Unicardio</option>
+            <option value="95">Unidade 95 - Araripe</option>
+            <option value="97">Unidade 97 - Endoclinic</option>
+            <option value="9">Unidade 09 - Barros</option>
+        </select>
+        <button id="confirmUnitBtn" class="btn btn-primary mt-3">Confirmar</button>
+    </div>
+
+    <!-- O restante do conteúdo ficará oculto até a seleção da unidade -->
+    <div class="container hidden" id="mainContent">
+        <h1>Contador de Pacientes: <span id="counter">0</span></h1>
+
+        <!-- Botão Entrou -->
+        <button id="entrarBtn" class="btn btn-primary hidden">Entrou</button>
+        
+        <!-- Seção para seleção com ou sem senha -->
+<div id="senhaSelection" class="hidden">
+    <button id="comSenhaBtn" class="btn btn-success">Com Senha</button>
+    <button id="semSenhaBtn" class="btn btn-danger">Sem Senha</button>
+</div>
+
+
+        <!-- Opções de Atendimento -->
+        <div class="options">
+            <div id="tipoAtendimento" class="hidden">
+                <p>Escolha o tipo de atendimento:</p>
+                <button class="tipoBtn btn btn-info" data-tipo="oexame">Orçamento exame</button>
+                <button class="tipoBtn btn btn-info" data-tipo="ovacina">Orçamento vacina</button>
+                <button class="tipoBtn btn btn-info" data-tipo="resultado">Resultado</button>
+                <button class="tipoBtn btn btn-info" data-tipo="avacina">Aplicação de vacina</button>
+                <button class="tipoBtn btn btn-info" data-tipo="coleta">Coleta a domicilio</button>
+                <button class="tipoBtn btn btn-info" data-tipo="coleta2">Coleta na unidade</button> 
+                <button class="tipoBtn btn btn-info" data-tipo="cadastro">Cadastro de paciente</button>
+                <button class="tipoBtn btn btn-info" data-tipo="entrega">Entrega de Material</button>
+                <button class="tipoBtn btn btn-info" data-tipo="outros">Outro motivo</button>
+                <button class="tipoBtn btn btn-info" data-tipo="igerais">Informações Gerais</button>
+                <button class="tipoBtn btn btn-info" data-tipo="ivacina">Informações vacinas</button>
+                <button class="tipoBtn btn btn-info" data-tipo="iexame">Informações exames</button>
+                <button class="tipoBtn btn btn-info" data-tipo="toxi">Toxicológico</button>
+                <button class="tipoBtn btn btn-danger" data-tipo="Não atendido">Não atendido</button>
+            </div>
+        </div>
+
+        <!-- Tabela para mostrar os atendimentos -->
+        <div class="table-container">
+            <table id="pessoasTable" class="table table-striped table-bordered">
+                <thead>
+                    <tr>
+                        <th>Número</th>
+                        <th>Unidade</th>
+                        <th>Atendimento</th>
+                        <th>Tipo de Atendimento</th>
+                        <th>Status</th>
+                        <th>Opções</th>
+                        <th>Mapeamento</th>
+                    </tr>
+                </thead>
+                <tbody>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Botão de Enviar -->
+        <button id="enviarBtn" class="btn btn-success hidden" onclick="enviarDados()">Enviar Dados</button>
+        <!-- <a id="acessarBtn" class="btn btn-dark hidden" target="_blank"  href="#">Acessar Dados</a> -->
+    </div>
+
+    <!-- Modal para editar tipo de atendimento -->
+    <div class="modal fade" id="editarModal" tabindex="-1" role="dialog" aria-labelledby="editarModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="editarModalLabel">Editar Tipo de Atendimento</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <label for="tipoAtendimentoSelect">Selecione o novo tipo de atendimento:</label>
+                    <select id="tipoAtendimentoSelect" class="form-control">
+                        <option value="oexame">Orçamento exame</option>
+                        <option value="ovacina">Orçamento vacina</option>
+                        <option value="resultado">Resultado</option>
+                        <option value="avacina">Aplicação de vacina</option>
+                        <option value="coleta">Coleta a domicilio</option>
+                        <option value="coleta2">Coleta na unidade</option>
+                        <option value="cadastro">Cadastro de paciente</option>
+                        <option value="entrega">Entrega de Material</option>
+                        <option value="outros">Outro motivo</option>
+                        <option value="igerais">Informações Gerais</option>
+                        <option value="ivacina">Informações vacinas</option>
+                        <option value="iexame">Informações exames</option>
+                        <option value="toxi">Toxicológico</option>
+                        <option value="Não atendido">Não atendido</option>
+                    </select>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Fechar</button>
+                    <button type="button" class="btn btn-primary" id="salvarEdicaoBtn">Salvar Alteração</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+    let totalEntrou = 0;
+    let counter = 0;
+    let totaloexame = 0;
+    let totalovacina = 0;
+    let totalresultado = 0;
+    let totalavacina = 0;
+    let totalcoleta = 0;
+    let totalcoleta2 = 0;
+    let totalcadastro = 0;
+    let totalentrega = 0;
+    let totaloutros = 0;
+    let totaligerais = 0;
+    let totalivacina = 0;
+    let totaliexame = 0;
+    let totaltoxi = 0;
+    let totalNaoAtendidas = 0;
+    let selectedUnit = ""; // Variável para armazenar a unidade selecionada
+
+     const counterElement = document.getElementById('counter');
+        const entrarBtn = document.getElementById('entrarBtn');
+        const tipoAtendimentoDiv = document.getElementById('tipoAtendimento');
+        const pessoasTable = document.getElementById('pessoasTable');
+        const enviarBtn = document.getElementById('enviarBtn');
+        //const acessarBtn = document.getElementById('acessarBtn');
+        const confirmUnitBtn = document.getElementById('confirmUnitBtn');
+        const unitSelectionDiv = document.getElementById('unitSelection');
+        const unitSelect = document.getElementById('unitSelect');
+        const mainContent = document.getElementById('mainContent');
+
+        // Função de seleção da unidade
+        confirmUnitBtn.addEventListener('click', function() {
+            const selected = unitSelect.value;
+            if (selected) {
+                selectedUnit = selected;
+                unitSelectionDiv.classList.add('hidden');
+                mainContent.classList.remove('hidden');
+                entrarBtn.classList.remove('hidden');
+            } else {
+                alert('Por favor, selecione uma unidade.');
+            }
+        });
+
+        // Seleção do botão "Entrou"
+        entrarBtn.addEventListener('click', function() {
+            counter++; // Incrementa o contador de pacientes
+            totalEntrou++; // Incrementa a quantidade de atendidas
+            counterElement.textContent = counter;
+            entrarBtn.classList.add('hidden');
+            document.getElementById('senhaSelection').classList.remove('hidden');
+        });
+
+        document.getElementById('comSenhaBtn').addEventListener('click', function() {
+            totalComSenha++; // Atualizando a contagem de "Com Senha"
+            document.getElementById('senhaSelection').classList.add('hidden');
+            tipoAtendimentoDiv.classList.remove('hidden');
+        });
+
+        document.getElementById('semSenhaBtn').addEventListener('click', function() {
+            totalSemSenha++; // Atualizando a contagem de "Sem Senha"
+            document.getElementById('senhaSelection').classList.add('hidden');
+            tipoAtendimentoDiv.classList.remove('hidden');
+        });
+
+
+    // Seleção do tipo de atendimento
+document.querySelectorAll('.tipoBtn').forEach(button => {
+    button.addEventListener('click', function() {
+        const tipo = button.getAttribute('data-tipo');
+        switch (tipo) {
+            case 'oexame':
+                totaloexame++;
+                break;
+            case 'ovacina':
+                totalovacina++;
+                break;
+            case 'resultado':
+                totalresultado++;
+                break;
+            case 'avacina':
+                totalavacina++;
+                break;
+            case 'coleta':
+                totalcoleta++;
+                break;
+            case 'coleta2':
+                totalcoleta2++;
+                break;
+            case 'cadastro':
+                totalcadastro++;
+                break;
+            case 'entrega':
+                totalentrega++;  
+                break;
+            case 'outros':
+                totaloutros++; 
+                break;
+            case 'igerais':
+                totaligerais++; 
+                break;
+            case 'ivacina':
+                totalivacina++; 
+                break;
+            case 'iexame':
+                totaliexame++; 
+                break;
+            case 'toxi':
+                totaltoxi++; 
+                break;
+            case 'Não atendido':
+                totalNaoAtendidas++;
+                break;
+        }
+
+            // Atualiza a tabela com a unidade escolhida
+            updateTable(counter, selectedUnit, tipo, "Atendida", `Pessoa ${counter}: ${tipo}, Foi atendida`);
+            tipoAtendimentoDiv.classList.add('hidden');
+            updateDownloadButtons();
+
+            // Exibe o botão "Enviar"
+            enviarBtn.classList.remove('hidden');
+           // acessarBtn.classList.remove('hidden');
+            entrarBtn.classList.remove('hidden');
+        });
+    });
+
+// Função para atualizar a tabela
+function updateTable(num, unidade, tipo, status, estadoAtual) {
+    const tableBody = document.querySelector("#pessoasTable tbody");
+    
+    const existingRow = Array.from(tableBody.rows).find(row => row.cells[0].textContent == num);
+
+    if (existingRow) {
+        existingRow.cells[1].textContent = unidade;
+        existingRow.cells[2].textContent = estadoAtual;
+        existingRow.cells[3].textContent = tipo;
+        existingRow.cells[4].innerHTML = '<div class="no-wrap">' +
+            '<button class="btn btn-success btn-sm" disabled>Atendida</button>' +
+            '</div>';
+        existingRow.cells[5].innerHTML = '<button class="btn btn-secondary btn-sm" onclick="editarTipoAtendimento(' + num + ')">Editar atendimento</button>';
+        existingRow.cells[6].textContent = "N/A"; // Motivo inicialmente vazio
+    } else {
+        const row = tableBody.insertRow();
+        row.insertCell(0).textContent = num;
+        row.insertCell(1).textContent = unidade;
+        row.insertCell(2).textContent = estadoAtual;
+        row.insertCell(3).textContent = tipo;
+        row.insertCell(4).innerHTML = '<div class="no-wrap">' +
+            '<button class="btn btn-success btn-sm" disabled>Atendida</button>' +
+            '</div>';
+        row.insertCell(5).innerHTML = '<button class="btn btn-secondary btn-sm" onclick="editarTipoAtendimento(' + num + ')">Editar atendimento</button>';
+        row.insertCell(6).textContent = "N/A"; // Motivo inicialmente vazio
+    }
+}
+
+
+// Variáveis para contabilizar os atendimentos com e sem senha
+let totalComSenha = 0;
+let totalSemSenha = 0;
+
+const step1Div = document.getElementById('step1');
+
+// Atualizando o evento do botão "Entrou"
+
+
+// Botões de atendimento com ou sem senha
+document.querySelectorAll('.stepBtn').forEach(button => {
+    button.addEventListener('click', function() {
+        const senhaTipo = button.getAttribute('data-step');
+
+        // Contabiliza as pessoas com ou sem senha
+        if (senhaTipo === 'Pegou senha') {
+            totalComSenha++;
+        } else if (senhaTipo === 'Não pegou senha') {
+            totalSemSenha++;
+        }
+
+        // Atualiza a tabela e esconde a pergunta de senha
+        updateTable(counter, selectedUnit, tipoAtendimento, "Atendida", `Pessoa ${counter}: ${tipoAtendimento}, Foi atendida ${senhaTipo}`);
+        step1Div.classList.add('hidden');  // Esconde a etapa de senha
+
+        // Exibe o botão "Enviar" novamente
+        updateDownloadButtons();
+    });
+});
+
+function enviarDados() {
+    const dados = {
+        unidade: selectedUnit,
+        totaloexame: totaloexame,
+        totalovacina: totalovacina,
+        totalresultado: totalresultado,
+        totalavacina: totalavacina,
+        totalcoleta: totalcoleta,
+        totalcoleta2: totalcoleta2, 
+        totalcadastro: totalcadastro,
+        totalentrega: totalentrega,
+        totaloutros: totaloutros,
+        totaligerais: totaligerais,
+        totalivacina: totalivacina,
+        totaliexame: totaliexame,
+        totaltoxi: totaltoxi,
+        atendidas: totalEntrou,
+        contadorPacientes: counter,
+        comSenha: totalComSenha,
+        semSenha: totalSemSenha,
+        naoAtendidas: totalNaoAtendidas, // Aqui está a variável correta
+        data: new Date().toLocaleDateString('pt-BR'),
+        hora: new Date().toLocaleTimeString('pt-BR')   
+    };
+
+    // Enviar os dados para o Google Apps Script via POST
+    fetch('https://script.google.com/macros/s/AKfycbwEVFee9JzrkWGavvKFW08ot6NqSJCYtAMAjWCgI87vvXl2yb72M9rx2cI3WtEeQFJw/exec', {
+        method: 'POST',
+        body: new URLSearchParams(dados)
+    })
+    .then(response => response.text())
+    .then(result => {
+        alert(result); // Exibe a resposta do Apps Script
+        location.reload();
+        //window.location.href = "https://sites.google.com/laboratoriolamic.com.br/contador/in%C3%ADcio?authuser=1";
+
+    })
+    .catch(error => {
+        alert('Erro ao enviar os dados: ' + error);
+    });
+}
+
+
+// Função para atualizar a tabela
+function updateTable(num, unidade, tipo, status, estadoAtual) {
+    const tableBody = document.querySelector("#pessoasTable tbody");
+    const existingRow = Array.from(tableBody.rows).find(row => row.cells[0].textContent == num);
+
+    if (existingRow) {
+        existingRow.cells[1].textContent = unidade;
+        existingRow.cells[2].textContent = estadoAtual;
+        existingRow.cells[3].textContent = tipo;
+        existingRow.cells[4].innerHTML = '<div class="no-wrap">' +
+            '<button class="btn btn-success btn-sm" disabled>Atendida</button>' +
+            '</div>';
+        existingRow.cells[5].innerHTML = '<button class="btn btn-secondary btn-sm" onclick="editarTipoAtendimento(' + num + ')">Editar atendimento</button>';
+        existingRow.cells[6].textContent = "N/A"; // Motivo inicialmente vazio
+    } else {
+        const row = tableBody.insertRow();
+        row.insertCell(0).textContent = num;
+        row.insertCell(1).textContent = unidade;
+        row.insertCell(2).textContent = estadoAtual;
+        row.insertCell(3).textContent = tipo;
+        row.insertCell(4).innerHTML = '<div class="no-wrap">' +
+            '<button class="btn btn-success btn-sm" disabled>Atendida</button>' +
+            '</div>';
+        row.insertCell(5).innerHTML = '<button class="btn btn-secondary btn-sm" onclick="editarTipoAtendimento(' + num + ')">Editar atendimento</button>';
+        row.insertCell(6).textContent = "N/A"; // Motivo inicialmente vazio
+    }
+}
+
+
+    // Função para exibir ou ocultar os botões de envio de dados
+    function updateDownloadButtons() {
+        if (counter > 0) {
+            enviarBtn.classList.remove('hidden');
+          //  acessarBtn.classList.remove('hidden');
+        } else {
+            enviarBtn.classList.add('hidden');
+          //  acessarBtn.classList.add('hidden');
+        }
+    }
+
+    // Variáveis para armazenar a linha selecionada e o número de atendimento
+    let selectedRow = null; // Linha selecionada
+    let editarNumero = null; // Número da pessoa a ser editada
+
+    // Função para exibir a modal de edição
+function editarTipoAtendimento(num) {
+    // Armazena o número da pessoa que está sendo editada
+    const tableBody = document.querySelector("#pessoasTable tbody");
+    const row = Array.from(tableBody.rows).find(row => row.cells[0].textContent == num);
+    
+    if (row) {
+        // Armazena o tipo de atendimento atual
+        const tipoAtual = row.cells[3].textContent;
+        editarNumero = num; // Armazena o número da pessoa
+
+        // Ajusta o valor do select com o tipo de atendimento atual
+        const tipoSelect = document.getElementById('tipoAtendimentoSelect');
+        tipoSelect.value = tipoAtual;
+
+        // Exibe a modal
+        $('#editarModal').modal('show');
+    }
+}
+
+// Evento de clique no botão "Salvar Alteração"
+document.getElementById('salvarEdicaoBtn').addEventListener('click', function() {
+    if (editarNumero !== null) {
+        // Recupera o novo tipo selecionado
+        const novoTipo = document.getElementById('tipoAtendimentoSelect').value;
+
+        // Se o tipo de atendimento foi alterado
+        if (novoTipo !== null && novoTipo !== '') {
+            // Atualiza a linha da tabela com o novo tipo de atendimento
+            const tableBody = document.querySelector("#pessoasTable tbody");
+            const row = Array.from(tableBody.rows).find(row => row.cells[0].textContent == editarNumero);
+
+            if (row) {
+                // Pega o tipo anterior
+                const tipoAnterior = row.cells[3].textContent;
+
+                // Se o tipo foi alterado, subtrai da contagem anterior e soma ao novo tipo
+                if (tipoAnterior !== novoTipo) {
+                    // Subtrai da contagem do tipo anterior
+                    switch (tipoAnterior) {
+                        case 'oexame':
+                            totaloexame++;
+                            break;
+                        case 'ovacina':
+                            totalovacina++;
+                            break;
+                        case 'resultado':
+                            totalresultado++;
+                            break;
+                        case 'avacina':
+                            totalavacina++;
+                            break;
+                        case 'coleta':
+                            totalcoleta++;
+                            break;
+                        case 'coleta2':
+                            totalcoleta2++;
+                            break;
+                        case 'cadastro':
+                            totalcadastro++;
+                            break;
+                        case 'entrega':
+                            totalentrega++;  
+                            break;
+                        case 'outros':
+                            totaloutros++; 
+                            break;
+                        case 'igerais':
+                            totaligerais++; 
+                            break;
+                        case 'ivacina':
+                            totalivacina++; 
+                            break;
+                        case 'iexame':
+                            totaliexame++; 
+                            break;
+                        case 'toxi':
+                            totaltoxi++; 
+                            break;
+                        case 'Não atendido': // Quando for alterado de Não atendido para outro tipo
+                            totalNaoAtendidas--; 
+                            break; 
+                    }
+
+                    // Soma à contagem do novo tipo
+                    switch (novoTipo) {
+                        case 'oexame':
+                            totaloexame++;
+                            break;
+                        case 'ovacina':
+                            totalovacina++;
+                            break;
+                        case 'resultado':
+                            totalresultado++;
+                            break;
+                        case 'avacina':
+                            totalavacina++;
+                            break;
+                        case 'coleta':
+                            totalcoleta++;
+                            break;
+                        case 'coleta2':
+                            totalcoleta2++;
+                            break;
+                        case 'cadastro':
+                            totalcadastro++;
+                            break;
+                        case 'entrega':
+                            totalentrega++;  
+                            break;
+                        case 'outros':
+                            totaloutros++; 
+                            break;
+                        case 'igerais':
+                            totaligerais++; 
+                            break;
+                        case 'ivacina':
+                            totalivacina++; 
+                            break;
+                        case 'iexame':
+                            totaliexame++; 
+                            break;
+                        case 'toxi':
+                            totaltoxi++; 
+                            break;
+                        case 'Não atendido': // Quando o tipo for alterado para "Não atendido"
+                            totalNaoAtendidas++; 
+                            break;
+                    }
+                }
+
+                // Atualiza o tipo na tabela
+                row.cells[3].textContent = novoTipo;
+
+                // Fecha a modal
+                $('#editarModal').modal('hide');
+            }
+        }
+    }
+});
+
+
+
+</script>
+
+<!-- Links para o jQuery e o Bootstrap -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+</body>
+</html>
