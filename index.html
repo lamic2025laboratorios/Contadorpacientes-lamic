@@ -3,323 +3,195 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Contador de Pacientes v1.1</title>
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            min-height: 100vh;
-            background-color: #f9f9f9;
-        }
-        .table-container {
-            max-height: 300px;
-            overflow-y: auto;
-            border: 1px solid #ccc;
-            padding: 10px;
-            margin: 20px 0;
-            width: 100%;
-            max-width: 1000px;
-            border-radius: 0.5rem;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-        }
-        th, td {
-            padding: 8px;
-            text-align: left;
-        }
-        td {
-            max-width: 250px;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-        }
-        .hidden {
-            display: none;
-        }
-        .no-wrap {
-            white-space: nowrap;
-        }
-    </style>
+    <title>Contador de Pacientes</title>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
-
-    <div id="unitSelection">
-        <h2>Selecione a Unidade:</h2>
-        <select id="unitSelect" class="form-control">
-            <option value="">Escolha sua unidade</option>
-            <option value="1">Unidade 01 - Central, Juazeiro do Norte</option>
-            <option value="3">Unidade 03 - Crato</option>
-            <option value="5">Unidade 05 - Novo Juazeiro</option>
-            <option value="6">Unidade 06 - Milagres</option>
-            <option value="10">Unidade 10 - Office Cariri</option>
-            <option value="12">Unidade 12 - Caririaçu</option>
-            <option value="13">Unidade 13 - Campos Sales</option>
-            <option value="14">Unidade 14 - Nova Olinda</option>
-            <option value="23">Unidade 23 - Salesiano</option>
-            <option value="62">Unidade 62 - Clemir Arrais</option>
-            <option value="88">Unidade 88 - Unicardio</option>
-            <option value="95">Unidade 95 - Araripe</option>
-            <option value="97">Unidade 97 - Endoclinic</option>
-            <option value="9">Unidade 09 - Barros</option>
-        </select>
-        <button id="confirmUnitBtn" class="btn btn-primary mt-3">Confirmar</button>
-    </div>
-
-    <div class="container hidden" id="mainContent">
-        <h1>Contador de Pacientes: <span id="counter">0</span></h1>
-        <button id="entrarBtn" class="btn btn-primary hidden">Entrou</button>
-        <div id="senhaSelection" class="hidden">
-            <button id="comSenhaBtn" class="btn btn-success">Com Senha</button>
-            <button id="semSenhaBtn" class="btn btn-danger">Sem Senha</button>
-        </div>
-        <div class="options">
-            <div id="tipoAtendimento" class="hidden">
-                <p>Escolha o tipo de atendimento:</p>
-                <button class="tipoBtn btn btn-info" data-tipo="oexame">Orçamento exame</button>
-                <button class="tipoBtn btn btn-info" data-tipo="ovacina">Orçamento vacina</button>
-                <button class="tipoBtn btn btn-info" data-tipo="resultado">Resultado</button>
-                <button class="tipoBtn btn btn-info" data-tipo="avacina">Aplicação de vacina</button>
-                <button class="tipoBtn btn btn-info" data-tipo="coleta">Coleta a domicilio</button>
-                <button class="tipoBtn btn btn-info" data-tipo="coleta2">Coleta na unidade</button> 
-                <button class="tipoBtn btn btn-info" data-tipo="cadastro">Cadastro de paciente</button>
-                <button class="tipoBtn btn btn-info" data-tipo="entrega">Entrega de Material</button>
-                <button class="tipoBtn btn btn-info" data-tipo="outros">Outro motivo</button>
-                <button class="tipoBtn btn btn-info" data-tipo="igerais">Informações Gerais</button>
-                <button class="tipoBtn btn btn-info" data-tipo="ivacina">Informações vacinas</button>
-                <button class="tipoBtn btn btn-info" data-tipo="iexame">Informações exames</button>
-                <button class="tipoBtn btn btn-info" data-tipo="toxi">Toxicológico</button>
-                <button class="tipoBtn btn btn-danger" data-tipo="Não atendido">Não atendido</button>
+    <!-- Seleção de Unidade -->
+    <div id="unitSelection" class="min-h-screen bg-background flex items-center justify-center p-4">
+        <div class="card w-full max-w-md">
+            <div class="card-header text-center">
+                <h1 class="text-2xl font-bold text-primary">Contador de Pacientes</h1>
+                <p class="text-muted-foreground">Selecione sua unidade</p>
+            </div>
+            <div class="card-content space-y-4">
+                <select id="unitSelect" class="select w-full">
+                    <option value="">Escolha sua unidade</option>
+                    <option value="1">Unidade 01 - Central, Juazeiro do Norte</option>
+                    <option value="3">Unidade 03 - Crato</option>
+                    <option value="5">Unidade 05 - Novo Juazeiro</option>
+                    <option value="6">Unidade 06 - Milagres</option>
+                    <option value="9">Unidade 09 - Barros</option>
+                    <option value="10">Unidade 10 - Office Cariri</option>
+                    <option value="12">Unidade 12 - Caririaçu</option>
+                    <option value="13">Unidade 13 - Campos Sales</option>
+                    <option value="14">Unidade 14 - Nova Olinda</option>
+                    <option value="23">Unidade 23 - Salesiano</option>
+                    <option value="62">Unidade 62 - Clemir Arrais</option>
+                    <option value="88">Unidade 88 - Unicardio</option>
+                    <option value="95">Unidade 95 - Araripe</option>
+                    <option value="97">Unidade 97 - Endoclinic</option>
+                </select>
+                <button id="confirmUnitBtn" class="btn btn-primary w-full" disabled>Confirmar</button>
             </div>
         </div>
-        <div class="table-container">
-            <table id="pessoasTable" class="table table-striped table-bordered">
-                <thead>
-                    <tr>
-                        <th>Número</th>
-                        <th>Unidade</th>
-                        <th>Atendimento</th>
-                        <th>Tipo de Atendimento</th>
-                        <th>Status</th>
-                        <th>Opções</th>
-                        <th>Mapeamento</th>
-                    </tr>
-                </thead>
-                <tbody>
-                </tbody>
-            </table>
-        </div>
-        <button id="enviarBtn" class="btn btn-success hidden" onclick="enviarDados()">Enviar Dados</button>
     </div>
 
-    <div class="modal fade" id="editarModal" tabindex="-1" role="dialog" aria-labelledby="editarModalLabel" aria-hidden="true">
-        <div class="modal-dialog" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="editarModalLabel">Editar Tipo de Atendimento</h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
+    <!-- Interface Principal -->
+    <div id="mainInterface" class="hidden min-h-screen bg-background p-4">
+        <div class="container max-w-6xl mx-auto space-y-6">
+            <!-- Cabeçalho -->
+            <div class="card">
+                <div class="card-content text-center p-6">
+                    <h1 class="text-3xl font-bold text-primary">Contador de Pacientes</h1>
+                    <p id="selectedUnitDisplay" class="text-muted-foreground mt-2"></p>
+                    <div class="text-4xl font-bold text-primary mt-4">
+                        <span id="counterDisplay">0</span>
+                    </div>
+                    <button id="changeUnitBtn" class="btn btn-outline mt-4">Trocar Unidade</button>
                 </div>
-                <div class="modal-body">
-                    <label for="tipoAtendimentoSelect">Selecione o novo tipo de atendimento:</label>
-                    <select id="tipoAtendimentoSelect" class="form-control">
-                        <option value="oexame">Orçamento exame</option>
-                        <option value="ovacina">Orçamento vacina</option>
-                        <option value="resultado">Resultado</option>
-                        <option value="avacina">Aplicação de vacina</option>
-                        <option value="coleta">Coleta a domicilio</option>
-                        <option value="coleta2">Coleta na unidade</option>
-                        <option value="cadastro">Cadastro de paciente</option>
-                        <option value="entrega">Entrega de Material</option>
-                        <option value="outros">Outro motivo</option>
-                        <option value="igerais">Informações Gerais</option>
-                        <option value="ivacina">Informações vacinas</option>
-                        <option value="iexame">Informações exames</option>
-                        <option value="toxi">Toxicológico</option>
+            </div>
+
+            <!-- Botão de Entrada -->
+            <div id="entrySection" class="text-center">
+                <button id="entryBtn" class="btn btn-primary btn-lg">Nova Entrada</button>
+            </div>
+
+            <!-- Seleção de Senha -->
+            <div id="passwordSection" class="hidden card">
+                <div class="card-header">
+                    <h3 class="card-title">Tipo de Senha</h3>
+                </div>
+                <div class="card-content grid grid-cols-2 gap-4">
+                    <button class="btn btn-password-with password-btn" data-password="Com Senha">Com Senha</button>
+                    <button class="btn btn-password-without password-btn" data-password="Sem Senha">Sem Senha</button>
+                </div>
+            </div>
+
+            <!-- Seleção de Tipo de Atendimento -->
+            <div id="serviceSection" class="hidden card">
+                <div class="card-header">
+                    <h3 class="card-title">Tipo de Atendimento</h3>
+                </div>
+                <div class="card-content grid grid-cols-2 md:grid-cols-3 gap-3">
+                    <button class="btn btn-outline service-btn" data-service="Orçamento exame">Orçamento exame</button>
+                    <button class="btn btn-outline service-btn" data-service="Orçamento vacina">Orçamento vacina</button>
+                    <button class="btn btn-outline service-btn" data-service="Resultado">Resultado</button>
+                    <button class="btn btn-outline service-btn" data-service="Aplicação de vacina">Aplicação de vacina</button>
+                    <button class="btn btn-outline service-btn" data-service="Coleta a domicilio">Coleta a domicilio</button>
+                    <button class="btn btn-outline service-btn" data-service="Coleta na unidade">Coleta na unidade</button>
+                    <button class="btn btn-outline service-btn" data-service="Cadastro de paciente">Cadastro de paciente</button>
+                    <button class="btn btn-outline service-btn" data-service="Entrega de Material">Entrega de Material</button>
+                    <button class="btn btn-outline service-btn" data-service="Outro motivo">Outro motivo</button>
+                    <button class="btn btn-outline service-btn" data-service="Informações Gerais">Informações Gerais</button>
+                    <button class="btn btn-outline service-btn" data-service="Informações vacinas">Informações vacinas</button>
+                    <button class="btn btn-outline service-btn" data-service="Informações exames">Informações exames</button>
+                    <button class="btn btn-outline service-btn" data-service="Toxicológico">Toxicológico</button>
+                    <button class="btn btn-outline-danger service-btn" data-service="Não atendido">Não atendido</button>
+                </div>
+            </div>
+
+            <!-- Tabela de Pacientes -->
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">Registro de Atendimentos</h3>
+                </div>
+                <div class="card-content">
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Nº</th>
+                                    <th>Unidade</th>
+                                    <th>Tipo</th>
+                                    <th>Senha</th>
+                                    <th>Hora</th>
+                                    <th>Status</th>
+                                    <th>Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody id="recordsTableBody">
+                            </tbody>
+                        </table>
+                    </div>
+                    <div id="noRecords" class="text-center text-muted-foreground py-8">
+                        Nenhum atendimento registrado ainda.
+                    </div>
+                </div>
+            </div>
+
+            <!-- Botão de Envio -->
+            <div id="submitSection" class="hidden text-center">
+                <button id="submitBtn" class="btn btn-success btn-lg">Enviar Dados Pendentes</button>
+                <div id="submitLoading" class="hidden mt-4">
+                    <div class="spinner"></div>
+                    <p class="text-muted-foreground">Enviando dados...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Edição -->
+    <div id="editModal" class="modal hidden">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Editar Atendimento</h3>
+                <button id="closeModalBtn" class="close-btn">&times;</button>
+            </div>
+            <div class="modal-body space-y-4">
+                <div>
+                    <label for="editTipoAtendimento">Tipo de Atendimento</label>
+                    <select id="editTipoAtendimento" class="select w-full">
+                        <option value="Orçamento exame">Orçamento exame</option>
+                        <option value="Orçamento vacina">Orçamento vacina</option>
+                        <option value="Resultado">Resultado</option>
+                        <option value="Aplicação de vacina">Aplicação de vacina</option>
+                        <option value="Coleta a domicilio">Coleta a domicilio</option>
+                        <option value="Coleta na unidade">Coleta na unidade</option>
+                        <option value="Cadastro de paciente">Cadastro de paciente</option>
+                        <option value="Entrega de Material">Entrega de Material</option>
+                        <option value="Outro motivo">Outro motivo</option>
+                        <option value="Informações Gerais">Informações Gerais</option>
+                        <option value="Informações vacinas">Informações vacinas</option>
+                        <option value="Informações exames">Informações exames</option>
+                        <option value="Toxicológico">Toxicológico</option>
                         <option value="Não atendido">Não atendido</option>
                     </select>
                 </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Fechar</button>
-                    <button type="button" class="btn btn-primary" id="salvarEdicaoBtn">Salvar Alteração</button>
+                <div>
+                    <label for="editSenha">Tipo de Senha</label>
+                    <select id="editSenha" class="select w-full">
+                        <option value="Com Senha">Com Senha</option>
+                        <option value="Sem Senha">Sem Senha</option>
+                    </select>
                 </div>
+                <div class="grid grid-cols-2 gap-4 text-sm text-muted-foreground">
+                    <div>
+                        <label class="text-xs">Hora:</label>
+                        <p id="editHoraDisplay"></p>
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 gap-4 text-sm text-muted-foreground">
+                    <div>
+                        <label class="text-xs">Unidade:</label>
+                        <p id="editUnidade"></p>
+                    </div>
+                    <div>
+                        <label class="text-xs">Data:</label>
+                        <p id="editData"></p>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button id="cancelEditBtn" class="btn btn-outline">Cancelar</button>
+                <button id="saveEditBtn" class="btn btn-primary">Salvar Alterações</button>
             </div>
         </div>
     </div>
-    <script>
-    // --- Variáveis Globais ---
-    let totalEntrou = 0, counter = 0, totaloexame = 0, totalovacina = 0, totalresultado = 0, totalavacina = 0, totalcoleta = 0, totalcoleta2 = 0, totalcadastro = 0, totalentrega = 0, totaloutros = 0, totaligerais = 0, totalivacina = 0, totaliexame = 0, totaltoxi = 0, totalNaoAtendidas = 0, totalComSenha = 0, totalSemSenha = 0, selectedUnit = "", editarNumero = null;
 
-    // --- Elementos do DOM ---
-    const counterElement = document.getElementById('counter'), entrarBtn = document.getElementById('entrarBtn'), tipoAtendimentoDiv = document.getElementById('tipoAtendimento'), pessoasTable = document.getElementById('pessoasTable'), enviarBtn = document.getElementById('enviarBtn'), confirmUnitBtn = document.getElementById('confirmUnitBtn'), unitSelectionDiv = document.getElementById('unitSelection'), unitSelect = document.getElementById('unitSelect'), mainContent = document.getElementById('mainContent');
+    <!-- Toast Container -->
+    <div id="toastContainer" class="toast-container"></div>
 
-    // --- FUNÇÕES DE ARMAZENAMENTO LOCAL ---
-    function salvarEstado() {
-        if (!selectedUnit) return;
-        const estado = {
-            totalEntrou, counter, totaloexame, totalovacina, totalresultado, totalavacina, totalcoleta, totalcoleta2, totalcadastro, totalentrega, totaloutros, totaligerais, totalivacina, totaliexame, totaltoxi, totalNaoAtendidas, totalComSenha, totalSemSenha,
-            tabelaHTML: document.querySelector("#pessoasTable tbody").innerHTML
-        };
-        try {
-            localStorage.setItem('estadoContador-' + selectedUnit, JSON.stringify(estado));
-            console.log('%cESTADO SALVO com sucesso para unidade ' + selectedUnit, 'color: green; font-weight: bold;', estado);
-        } catch (e) {
-            console.error('ERRO AO SALVAR ESTADO:', e);
-        }
-    }
-
-    function carregarEstado() {
-        const chave = 'estadoContador-' + selectedUnit;
-        const estadoSalvo = localStorage.getItem(chave);
-        console.log(`Procurando dados para a chave: ${chave}`);
-
-        if (estadoSalvo) {
-            try {
-                const estado = JSON.parse(estadoSalvo);
-                console.log('%cESTADO CARREGADO com sucesso!', 'color: blue; font-weight: bold;', estado);
-                totalEntrou = estado.totalEntrou; counter = estado.counter; totaloexame = estado.totaloexame; totalovacina = estado.totalovacina; totalresultado = estado.totalresultado; totalavacina = estado.totalavacina; totalcoleta = estado.totalcoleta; totalcoleta2 = estado.totalcoleta2; totalcadastro = estado.totalcadastro; totalentrega = estado.totalentrega; totaloutros = estado.totaloutros; totaligerais = estado.totaligerais; totalivacina = estado.totalivacina; totaliexame = estado.totaliexame; totaltoxi = estado.totaltoxi; totalNaoAtendidas = estado.totalNaoAtendidas; totalComSenha = estado.totalComSenha; totalSemSenha = estado.totalSemSenha;
-                
-                counterElement.textContent = counter;
-                document.querySelector("#pessoasTable tbody").innerHTML = estado.tabelaHTML;
-                updateDownloadButtons();
-            } catch (e) {
-                console.error('ERRO AO PROCESSAR DADOS SALVOS (JSON inválido):', e);
-                localStorage.removeItem(chave); // Remove dados corrompidos
-            }
-        } else {
-            console.warn('Nenhum estado salvo encontrado para a unidade ' + selectedUnit);
-        }
-    }
-
-    // --- LÓGICA DE EVENTOS ---
-    confirmUnitBtn.addEventListener('click', function() {
-        const selected = unitSelect.value;
-        if (selected) {
-            selectedUnit = selected;
-            unitSelectionDiv.classList.add('hidden');
-            mainContent.classList.remove('hidden');
-            entrarBtn.classList.remove('hidden');
-            carregarEstado();
-        } else {
-            alert('Por favor, selecione uma unidade.');
-        }
-    });
-
-    entrarBtn.addEventListener('click', function() {
-        counter++; totalEntrou++;
-        counterElement.textContent = counter;
-        entrarBtn.classList.add('hidden');
-        document.getElementById('senhaSelection').classList.remove('hidden');
-    });
-
-    document.getElementById('comSenhaBtn').addEventListener('click', function() {
-        totalComSenha++;
-        document.getElementById('senhaSelection').classList.add('hidden');
-        tipoAtendimentoDiv.classList.remove('hidden');
-    });
-
-    document.getElementById('semSenhaBtn').addEventListener('click', function() {
-        totalSemSenha++;
-        document.getElementById('senhaSelection').classList.add('hidden');
-        tipoAtendimentoDiv.classList.remove('hidden');
-    });
-
-    document.querySelectorAll('.tipoBtn').forEach(button => {
-        button.addEventListener('click', function() {
-            const tipo = button.getAttribute('data-tipo');
-            incrementCounter(tipo);
-            updateTable(counter, selectedUnit, tipo, "Atendida", `Pessoa ${counter}: ${tipo}, Foi atendida`);
-            tipoAtendimentoDiv.classList.add('hidden');
-            updateDownloadButtons();
-            entrarBtn.classList.remove('hidden');
-            salvarEstado();
-        });
-    });
-
-    document.getElementById('salvarEdicaoBtn').addEventListener('click', function() {
-        if (editarNumero === null) return;
-        const novoTipo = document.getElementById('tipoAtendimentoSelect').value;
-        const row = Array.from(document.querySelector("#pessoasTable tbody").rows).find(r => r.cells[0].textContent == editarNumero);
-        if (!row) return;
-
-        const tipoAnterior = row.cells[3].textContent;
-        if (tipoAnterior !== novoTipo) {
-            decrementCounter(tipoAnterior);
-            incrementCounter(novoTipo);
-        }
-        row.cells[3].textContent = novoTipo;
-        $('#editarModal').modal('hide');
-        salvarEstado();
-    });
-
-    // --- FUNÇÕES AUXILIARES ---
-    function updateTable(num, unidade, tipo, status, estadoAtual) {
-        const tableBody = document.querySelector("#pessoasTable tbody");
-        let row = Array.from(tableBody.rows).find(r => r.cells[0].textContent == num);
-        if (!row) {
-            row = tableBody.insertRow();
-            for(let i=0; i<7; i++) row.insertCell(i); // Cria todas as células de uma vez
-        }
-        row.cells[0].textContent = num;
-        row.cells[1].textContent = unidade;
-        row.cells[2].textContent = estadoAtual;
-        row.cells[3].textContent = tipo;
-        row.cells[4].innerHTML = '<div class="no-wrap"><button class="btn btn-success btn-sm" disabled>Atendida</button></div>';
-        row.cells[5].innerHTML = `<button class="btn btn-secondary btn-sm" onclick="editarTipoAtendimento(${num})">Editar atendimento</button>`;
-        row.cells[6].textContent = "N/A";
-    }
-
-    function enviarDados() {
-        const dados = {
-            unidade: selectedUnit, totaloexame, totalovacina, totalresultado, totalavacina, totalcoleta, totalcoleta2, totalcadastro, totalentrega, totaloutros, totaligerais, totalivacina, totaliexame, totaltoxi,
-            atendidas: totalEntrou, contadorPacientes: counter, comSenha: totalComSenha, semSenha: totalSemSenha, naoAtendidas: totalNaoAtendidas,
-            data: new Date().toLocaleDateString('pt-BR'), hora: new Date().toLocaleTimeString('pt-BR')
-        };
-        console.log("Enviando dados para a planilha:", dados);
-        fetch('https://script.google.com/macros/s/AKfycbwEVFee9JzrkWGavvKFW08ot6NqSJCYtAMAjWCgI87vvXl2yb72M9rx2cI3WtEeQFJw/exec', {
-            method: 'POST',
-            body: new URLSearchParams(dados)
-        })
-        .then(response => response.text())
-        .then(result => {
-            alert(result);
-            console.log('%cDados enviados. Limpando armazenamento local para a unidade ' + selectedUnit, 'color: red; font-weight: bold;');
-            localStorage.removeItem('estadoContador-' + selectedUnit);
-            location.reload();
-        })
-        .catch(error => console.error('Erro ao enviar os dados:', error));
-    }
-
-    function updateDownloadButtons() {
-        enviarBtn.classList.toggle('hidden', counter <= 0);
-    }
-
-    function editarTipoAtendimento(num) {
-        editarNumero = num;
-        const row = Array.from(document.querySelector("#pessoasTable tbody").rows).find(r => r.cells[0].textContent == num);
-        if (row) {
-            document.getElementById('tipoAtendimentoSelect').value = row.cells[3].textContent;
-            $('#editarModal').modal('show');
-        }
-    }
-
-    const incrementCounter = tipo => {
-        switch (tipo) {
-            case 'oexame': totaloexame++; break; case 'ovacina': totalovacina++; break; case 'resultado': totalresultado++; break; case 'avacina': totalavacina++; break; case 'coleta': totalcoleta++; break; case 'coleta2': totalcoleta2++; break; case 'cadastro': totalcadastro++; break; case 'entrega': totalentrega++; break; case 'outros': totaloutros++; break; case 'igerais': totaligerais++; break; case 'ivacina': totalivacina++; break; case 'iexame': totaliexame++; break; case 'toxi': totaltoxi++; break; case 'Não atendido': totalNaoAtendidas++; break;
-        }
-    };
-    const decrementCounter = tipo => {
-        switch (tipo) {
-            case 'oexame': totaloexame--; break; case 'ovacina': totalovacina--; break; case 'resultado': totalresultado--; break; case 'avacina': totalavacina--; break; case 'coleta': totalcoleta--; break; case 'coleta2': totalcoleta2--; break; case 'cadastro': totalcadastro--; break; case 'entrega': totalentrega--; break; case 'outros': totaloutros--; break; case 'igerais': totaligerais--; break; case 'ivacina': totalivacina--; break; case 'iexame': totaliexame--; break; case 'toxi': totaltoxi--; break; case 'Não atendido': totalNaoAtendidas--; break;
-        }
-    };
-    </script>
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script src="script.js"></script>
 </body>
 </html>
