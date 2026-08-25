@@ -14,6 +14,7 @@ let records = [];
 let currentStep = 'unit';
 let currentPassword = '';
 let isSubmitting = false;
+let isRegistering = false;
 let editingRecordId = null;
 let pendingDeleteId = null;
 
@@ -60,6 +61,8 @@ const submitSection = document.getElementById('submitSection');
 const submitBtn = document.getElementById('submitBtn');
 const submitBtnLabel = document.getElementById('submitBtnLabel');
 const sendingOverlay = document.getElementById('sendingOverlay');
+const sendingTitle = document.getElementById('sendingTitle');
+const sendingDesc = document.getElementById('sendingDesc');
 
 const editModal = document.getElementById('editModal');
 const editHeaderSub = document.getElementById('editHeaderSub');
@@ -166,13 +169,25 @@ document.querySelectorAll('.password-btn').forEach(btn => {
 });
 
 // Passo 3 — tipo de atendimento
+// Regra: cada atendimento registrado leva 10s (tela de carregamento) antes
+// de entrar na tabela — evita registrar em sequência rápida demais.
 document.querySelectorAll('.service-btn').forEach(btn => {
     btn.addEventListener('click', function () {
-        createRecord(this.dataset.service);
-        resetCurrentEntry();
-        updateTable();
-        saveUnitData();
-        showToast('Atendimento registrado com sucesso!', 'success');
+        if (isRegistering) return;
+        isRegistering = true;
+
+        const serviceType = this.dataset.service;
+        showProcessingOverlay('Registrando atendimento...', 'Aguarde, isso leva alguns segundos.');
+
+        setTimeout(() => {
+            createRecord(serviceType);
+            resetCurrentEntry();
+            updateTable();
+            saveUnitData();
+            hideProcessingOverlay();
+            isRegistering = false;
+            showToast('Atendimento registrado com sucesso!', 'success');
+        }, 10000);
     });
 });
 
@@ -467,6 +482,19 @@ function loadUnitData() {
 }
 
 // ══════════════════════════════════════════════════════════
+// OVERLAY DE CARREGAMENTO (compartilhado: registro local e envio ao Sheets)
+// ══════════════════════════════════════════════════════════
+function showProcessingOverlay(title, desc) {
+    sendingTitle.textContent = title;
+    sendingDesc.textContent = desc;
+    sendingOverlay.classList.remove('hidden');
+}
+
+function hideProcessingOverlay() {
+    sendingOverlay.classList.add('hidden');
+}
+
+// ══════════════════════════════════════════════════════════
 // ENVIO PARA A PLANILHA
 // ══════════════════════════════════════════════════════════
 async function handleSubmitPending() {
@@ -480,7 +508,7 @@ async function handleSubmitPending() {
 
     isSubmitting = true;
     submitBtn.disabled = true;
-    sendingOverlay.classList.remove('hidden');
+    showProcessingOverlay('Enviando dados...', 'Aguarde, isso pode levar alguns segundos.');
 
     try {
         for (const record of pendingRecords) {
@@ -518,7 +546,7 @@ async function handleSubmitPending() {
     } finally {
         isSubmitting = false;
         submitBtn.disabled = false;
-        sendingOverlay.classList.add('hidden');
+        hideProcessingOverlay();
     }
 }
 
