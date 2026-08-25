@@ -54,7 +54,7 @@ const tableWrap = document.querySelector('.table-wrap');
 const submitSection = document.getElementById('submitSection');
 const submitBtn = document.getElementById('submitBtn');
 const submitDesc = document.getElementById('submitDesc');
-const submitLoading = document.getElementById('submitLoading');
+const sendingOverlay = document.getElementById('sendingOverlay');
 
 const editModal = document.getElementById('editModal');
 const editHeaderSub = document.getElementById('editHeaderSub');
@@ -443,8 +443,7 @@ async function handleSubmitPending() {
 
     isSubmitting = true;
     submitBtn.disabled = true;
-    submitBtn.classList.add('hidden');
-    submitLoading.classList.remove('hidden');
+    sendingOverlay.classList.remove('hidden');
 
     try {
         for (const record of pendingRecords) {
@@ -482,8 +481,7 @@ async function handleSubmitPending() {
     } finally {
         isSubmitting = false;
         submitBtn.disabled = false;
-        submitBtn.classList.remove('hidden');
-        submitLoading.classList.add('hidden');
+        sendingOverlay.classList.add('hidden');
     }
 }
 

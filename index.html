@@ -21,30 +21,26 @@
             <div class="unit-glow g2"></div>
         </div>
 
-        <div class="unit-card">
-            <div class="unit-brand">
-                <div class="brand-mark">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
-                    </svg>
+        <div class="unit-login-wrap">
+            <img class="unit-login-logo" src="lamic-logo-branca.png" alt="LAMIC">
+            <div class="unit-login-tagline">Sistema de Atendimento</div>
+
+            <div class="unit-card">
+                <div class="unit-card-head">
+                    <div class="unit-card-title">Contador de Pacientes</div>
+                    <div class="unit-card-sub">Selecione a unidade para continuar</div>
                 </div>
-                <div class="brand-text">
-                    <h1>Contador de Pacientes</h1>
-                    <span>LAMIC · Atendimento</span>
+                <div class="unit-card-body">
+                    <button id="openUnitPickerBtn" class="btn-primary unit-picker-trigger">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><path d="M9 22V12h6v10"/>
+                        </svg>
+                        Selecionar Unidade
+                    </button>
                 </div>
             </div>
 
-            <div class="unit-title">Bem-vindo</div>
-            <p class="unit-sub">Selecione a unidade para começar a registrar os atendimentos.</p>
-
-            <button id="openUnitPickerBtn" class="btn-primary full-width btn-lg unit-picker-trigger">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><path d="M9 22V12h6v10"/>
-                </svg>
-                Selecionar Unidade
-            </button>
-
-            <div class="unit-footer">Laboratório LAMIC · Sistema de Atendimento</div>
+            <div class="unit-login-footer">Laboratório LAMIC · Sistema de Atendimento</div>
         </div>
     </div>
 
@@ -200,7 +196,7 @@
                 </div>
 
                 <!-- Passo 1 -->
-                <div id="entrySection" class="panel-body">
+                <div id="entrySection" class="panel-body flow-step">
                     <div class="entry-box">
                         <button id="entryBtn" class="btn-primary btn-lg">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -213,7 +209,7 @@
                 </div>
 
                 <!-- Passo 2 -->
-                <div id="passwordSection" class="panel-body hidden">
+                <div id="passwordSection" class="panel-body flow-step hidden">
                     <div class="flow-recap">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <path d="M12 5v14M5 12h14"/>
@@ -257,7 +253,7 @@
                 </div>
 
                 <!-- Passo 3 -->
-                <div id="serviceSection" class="panel-body hidden">
+                <div id="serviceSection" class="panel-body flow-step hidden">
                     <div class="flow-recap">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <path d="M20 6L9 17l-5-5"/>
@@ -265,45 +261,48 @@
                         Atendimento <strong id="recapNumeroSvc">#0</strong> · <strong id="recapSenha">—</strong> — qual foi o motivo?
                     </div>
 
-                    <div class="svc-group">
-                        <div class="svc-group-title">Orçamento</div>
-                        <div class="svc-grid">
-                            <button class="svc-btn c-blue service-btn" data-service="Orçamento exame"><span class="svc-dot"></span>Orçamento exame</button>
-                            <button class="svc-btn c-teal service-btn" data-service="Orçamento vacina"><span class="svc-dot"></span>Orçamento vacina</button>
+                    <!-- Só esta lista rola — cabeçalho e "Cancelar" acima/abaixo ficam fixos -->
+                    <div class="svc-scroll">
+                        <div class="svc-group">
+                            <div class="svc-group-title">Orçamento</div>
+                            <div class="svc-grid">
+                                <button class="svc-btn c-blue service-btn" data-service="Orçamento exame"><span class="svc-dot"></span>Orçamento exame</button>
+                                <button class="svc-btn c-teal service-btn" data-service="Orçamento vacina"><span class="svc-dot"></span>Orçamento vacina</button>
+                            </div>
+                        </div>
+
+                        <div class="svc-group">
+                            <div class="svc-group-title">Coleta e aplicação</div>
+                            <div class="svc-grid">
+                                <button class="svc-btn c-green service-btn" data-service="Coleta na unidade"><span class="svc-dot"></span>Coleta na unidade</button>
+                                <button class="svc-btn c-green service-btn" data-service="Coleta a domicilio"><span class="svc-dot"></span>Coleta a domicilio</button>
+                                <button class="svc-btn c-teal service-btn" data-service="Aplicação de vacina"><span class="svc-dot"></span>Aplicação de vacina</button>
+                                <button class="svc-btn c-purple service-btn" data-service="Entrega de Material"><span class="svc-dot"></span>Entrega de Material</button>
+                                <button class="svc-btn c-orange service-btn" data-service="Toxicológico"><span class="svc-dot"></span>Toxicológico</button>
+                            </div>
+                        </div>
+
+                        <div class="svc-group">
+                            <div class="svc-group-title">Informações e resultados</div>
+                            <div class="svc-grid">
+                                <button class="svc-btn c-blue service-btn" data-service="Resultado"><span class="svc-dot"></span>Resultado</button>
+                                <button class="svc-btn c-blue service-btn" data-service="Informações Gerais"><span class="svc-dot"></span>Informações Gerais</button>
+                                <button class="svc-btn c-blue service-btn" data-service="Informações exames"><span class="svc-dot"></span>Informações exames</button>
+                                <button class="svc-btn c-teal service-btn" data-service="Informações vacinas"><span class="svc-dot"></span>Informações vacinas</button>
+                            </div>
+                        </div>
+
+                        <div class="svc-group">
+                            <div class="svc-group-title">Cadastro e outros</div>
+                            <div class="svc-grid">
+                                <button class="svc-btn c-purple service-btn" data-service="Cadastro de paciente"><span class="svc-dot"></span>Cadastro de paciente</button>
+                                <button class="svc-btn c-orange service-btn" data-service="Outro motivo"><span class="svc-dot"></span>Outro motivo</button>
+                                <button class="svc-btn danger service-btn" data-service="Não atendido"><span class="svc-dot"></span>Não atendido</button>
+                            </div>
                         </div>
                     </div>
 
-                    <div class="svc-group">
-                        <div class="svc-group-title">Coleta e aplicação</div>
-                        <div class="svc-grid">
-                            <button class="svc-btn c-green service-btn" data-service="Coleta na unidade"><span class="svc-dot"></span>Coleta na unidade</button>
-                            <button class="svc-btn c-green service-btn" data-service="Coleta a domicilio"><span class="svc-dot"></span>Coleta a domicilio</button>
-                            <button class="svc-btn c-teal service-btn" data-service="Aplicação de vacina"><span class="svc-dot"></span>Aplicação de vacina</button>
-                            <button class="svc-btn c-purple service-btn" data-service="Entrega de Material"><span class="svc-dot"></span>Entrega de Material</button>
-                            <button class="svc-btn c-orange service-btn" data-service="Toxicológico"><span class="svc-dot"></span>Toxicológico</button>
-                        </div>
-                    </div>
-
-                    <div class="svc-group">
-                        <div class="svc-group-title">Informações e resultados</div>
-                        <div class="svc-grid">
-                            <button class="svc-btn c-blue service-btn" data-service="Resultado"><span class="svc-dot"></span>Resultado</button>
-                            <button class="svc-btn c-blue service-btn" data-service="Informações Gerais"><span class="svc-dot"></span>Informações Gerais</button>
-                            <button class="svc-btn c-blue service-btn" data-service="Informações exames"><span class="svc-dot"></span>Informações exames</button>
-                            <button class="svc-btn c-teal service-btn" data-service="Informações vacinas"><span class="svc-dot"></span>Informações vacinas</button>
-                        </div>
-                    </div>
-
-                    <div class="svc-group">
-                        <div class="svc-group-title">Cadastro e outros</div>
-                        <div class="svc-grid">
-                            <button class="svc-btn c-purple service-btn" data-service="Cadastro de paciente"><span class="svc-dot"></span>Cadastro de paciente</button>
-                            <button class="svc-btn c-orange service-btn" data-service="Outro motivo"><span class="svc-dot"></span>Outro motivo</button>
-                            <button class="svc-btn danger service-btn" data-service="Não atendido"><span class="svc-dot"></span>Não atendido</button>
-                        </div>
-                    </div>
-
-                    <div style="display:flex;justify-content:center;margin-top:20px;">
+                    <div class="svc-cancel-row">
                         <button class="btn-secondary cancel-entry-btn">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                 <path d="M18 6L6 18M6 6l12 12"/>
@@ -318,34 +317,7 @@
 
             <div class="col-right">
 
-            <!-- Envio -->
-            <div id="submitSection" class="hidden">
-                <div class="submit-panel">
-                    <div class="submit-info">
-                        <div class="submit-info-icon">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <path d="M22 2L11 13"/><path d="M22 2l-7 20-4-9-9-4 20-7z"/>
-                            </svg>
-                        </div>
-                        <div>
-                            <div class="submit-title">Dados pendentes de envio</div>
-                            <div class="submit-desc" id="submitDesc">Nenhum registro pendente.</div>
-                        </div>
-                    </div>
-                    <button id="submitBtn" class="btn-success">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M17 8l-5-5-5 5"/><path d="M12 3v12"/>
-                        </svg>
-                        Enviar dados pendentes
-                    </button>
-                    <div id="submitLoading" class="submit-loading hidden">
-                        <div class="spinner"></div>
-                        <span>Enviando dados...</span>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Tabela -->
+            <!-- Tabela + envio (mesmo painel: botão de enviar fica embaixo, dentro da div) -->
             <div class="panel">
                 <div class="panel-head">
                     <div class="panel-head-left">
@@ -383,6 +355,29 @@
                     </div>
                     <div class="empty-title">Nenhum atendimento registrado</div>
                     <div class="empty-desc">Toque em "Nova Entrada" para registrar o primeiro paciente.</div>
+                </div>
+
+                <!-- Envio — dentro da mesma div do Registro de Atendimentos -->
+                <div id="submitSection" class="panel-foot hidden">
+                    <div class="submit-panel">
+                        <div class="submit-info">
+                            <div class="submit-info-icon">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M22 2L11 13"/><path d="M22 2l-7 20-4-9-9-4 20-7z"/>
+                                </svg>
+                            </div>
+                            <div>
+                                <div class="submit-title">Dados pendentes de envio</div>
+                                <div class="submit-desc" id="submitDesc">Nenhum registro pendente.</div>
+                            </div>
+                        </div>
+                        <button id="submitBtn" class="btn-success">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M17 8l-5-5-5 5"/><path d="M12 3v12"/>
+                            </svg>
+                            Enviar dados pendentes
+                        </button>
+                    </div>
                 </div>
             </div>
 
@@ -525,6 +520,15 @@
                     Excluir
                 </button>
             </div>
+        </div>
+    </div>
+
+    <!-- Overlay de envio — fundo borrado cobrindo a tela inteira -->
+    <div id="sendingOverlay" class="modal hidden">
+        <div class="sending-card">
+            <div class="spinner spinner-lg"></div>
+            <div class="sending-title">Enviando dados...</div>
+            <div class="sending-desc">Aguarde, isso pode levar alguns segundos.</div>
         </div>
     </div>
 

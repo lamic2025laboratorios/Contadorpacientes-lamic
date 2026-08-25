@@ -115,64 +115,54 @@ svg { flex-shrink: 0; }
 .unit-glow.g1 { width: 600px; height: 600px; top: -220px; left: -160px; background: rgba(26, 91, 191, .18); }
 .unit-glow.g2 { width: 500px; height: 500px; bottom: -170px; right: -110px; background: rgba(0, 184, 162, .10); }
 
-.unit-card {
-  position: relative; z-index: 2;
-  width: 100%; max-width: 460px;
-  background: linear-gradient(145deg, var(--navy-600), var(--navy-700));
-  border: 1px solid var(--border-med);
-  border-radius: var(--r-2xl);
-  padding: 40px 42px 34px;
-  box-shadow: var(--shadow-lg), inset 0 1px 0 rgba(255, 255, 255, .04);
-  animation: cardIn .35s var(--ease);
-}
 @keyframes cardIn { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
 
-.unit-brand { display: flex; align-items: center; gap: 14px; margin-bottom: 26px; }
-.brand-mark {
-  width: 52px; height: 52px; border-radius: 14px; flex-shrink: 0;
-  background: linear-gradient(135deg, var(--blue-500), var(--navy-300, #254870));
-  border: 1px solid var(--border-bright);
-  display: flex; align-items: center; justify-content: center;
-  box-shadow: 0 0 24px var(--blue-glow);
+/* Logo + card de acesso, no padrão da tela de login da Gestão TI */
+.unit-login-wrap {
+  position: relative; z-index: 2;
+  display: flex; flex-direction: column; align-items: center;
+  width: 100%; max-width: 440px;
 }
-.brand-mark svg { width: 26px; height: 26px; color: var(--blue-100); }
-.brand-text h1 {
-  font-family: 'Rajdhani', 'Inter', sans-serif;
-  font-size: 1.5rem; font-weight: 700; color: var(--white);
-  line-height: 1.15; letter-spacing: .01em;
+.unit-login-logo {
+  width: 300px; max-width: 78vw; height: auto;
+  margin-bottom: 20px;
+  animation: cardIn .35s var(--ease);
 }
-.brand-text span { font-size: .78rem; color: var(--gray-400); letter-spacing: .04em; text-transform: uppercase; font-weight: 600; }
+.unit-login-tagline {
+  font-size: .88rem; font-weight: 700; letter-spacing: .14em;
+  text-transform: uppercase; color: var(--gray-400);
+  margin-bottom: 32px; text-align: center;
+}
 
-.unit-title { font-size: 1.02rem; font-weight: 700; color: var(--white); margin-bottom: 3px; }
-.unit-sub { font-size: .85rem; color: var(--gray-400); margin-bottom: 22px; }
+.unit-card {
+  width: 100%;
+  background: var(--surf-0);
+  border-radius: var(--r-2xl);
+  overflow: hidden;
+  box-shadow: var(--shadow-lg), inset 0 1px 0 rgba(255, 255, 255, .04);
+  animation: cardIn .35s var(--ease) .05s backwards;
+}
+.unit-card-head {
+  background: linear-gradient(145deg, var(--navy-600), var(--navy-700));
+  padding: 26px 28px 24px;
+  text-align: center;
+}
+.unit-card-title {
+  font-family: 'Rajdhani', 'Inter', sans-serif;
+  font-size: 1.55rem; font-weight: 700; color: var(--white); letter-spacing: .02em;
+}
+.unit-card-sub { font-size: .92rem; color: var(--gray-400); margin-top: 5px; }
+/* Div branca folgada — o botão em si fica compacto lá dentro (ver .unit-picker-trigger) */
+.unit-card-body { padding: 48px 32px 52px; display: flex; justify-content: center; }
+
+.unit-login-footer { margin-top: 24px; font-size: .72rem; color: var(--gray-500); text-align: center; }
 
 .form-label {
   display: block; font-size: .72rem; font-weight: 700;
   color: var(--gray-300); margin-bottom: 7px;
   text-transform: uppercase; letter-spacing: .07em;
 }
-.input-dark {
-  width: 100%;
-  background: var(--navy-800);
-  border: 1.5px solid var(--border-subtle);
-  border-radius: var(--r-md);
-  color: var(--white);
-  padding: 12px 14px;
-  font-size: .92rem;
-  font-family: inherit;
-  outline: none;
-  transition: border-color .18s var(--ease), box-shadow .18s var(--ease);
-}
-.input-dark:focus { border-color: var(--blue-300); box-shadow: var(--shadow-focus); }
-.select-dark {
-  appearance: none; cursor: pointer;
-  padding-right: 38px;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%236680a0' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
-  background-repeat: no-repeat; background-position: right 12px center;
-}
-.select-dark option { background: var(--navy-800); color: var(--white); }
-
-.unit-picker-trigger { margin-top: 24px; }
+.unit-picker-trigger { margin-top: 0; }
 
 .unit-selected-info {
   display: flex; align-items: center; gap: 10px;
@@ -330,6 +320,20 @@ svg { flex-shrink: 0; }
 .step.done .step-num { background: rgba(29, 184, 122, .14); border-color: var(--green); color: var(--green); }
 .step.done .step-lbl { color: var(--ink-500); }
 .step-line { flex: 1; height: 2px; background: var(--surf-border); margin: 0 12px; border-radius: 2px; min-width: 20px; }
+
+/* Painel de entrada travado numa altura só — não cresce/encolhe entre os
+   passos 1/2/3. Passo 1 e 2 centralizam o conteúdo (curto); o passo 3
+   (lista de tipos) usa o espaço todo com cabeçalho fixo + lista rolável. */
+.panel-body.flow-step {
+  height: 520px;
+  display: flex; flex-direction: column;
+  overflow: hidden;
+}
+#entrySection.flow-step, #passwordSection.flow-step { justify-content: center; }
+#serviceSection.flow-step { justify-content: flex-start; }
+#serviceSection .flow-recap { flex-shrink: 0; }
+.svc-scroll { flex: 1 1 auto; min-height: 0; overflow-y: auto; padding-right: 4px; margin-right: -4px; }
+.svc-cancel-row { flex-shrink: 0; display: flex; justify-content: center; margin-top: 14px; }
 
 /* ── Passo 1: nova entrada ── */
 .entry-box { display: flex; flex-direction: column; align-items: center; gap: 12px; padding: 14px 0 6px; }
@@ -551,7 +555,9 @@ svg { flex-shrink: 0; }
 .submit-title { font-size: .95rem; font-weight: 700; color: var(--ink-900); }
 .submit-desc { font-size: .8rem; color: var(--ink-500); }
 
-.submit-loading { display: flex; align-items: center; gap: 10px; font-size: .85rem; color: var(--ink-500); }
+/* Envio agora vive dentro do painel de Registro de Atendimentos, embaixo da tabela */
+.panel-foot { padding: 16px 20px 20px; border-top: 1px solid var(--surf-border); }
+
 .spinner {
   width: 20px; height: 20px; flex-shrink: 0;
   border: 2.5px solid var(--surf-border);
@@ -560,6 +566,20 @@ svg { flex-shrink: 0; }
   animation: spin .8s linear infinite;
 }
 @keyframes spin { to { transform: rotate(360deg); } }
+
+/* Overlay de envio — tela inteira borrada com card de carregamento central */
+.sending-card {
+  background: var(--surf-0);
+  border-radius: var(--r-xl);
+  padding: 40px 46px;
+  box-shadow: var(--shadow-pop);
+  display: flex; flex-direction: column; align-items: center; gap: 14px;
+  text-align: center;
+  animation: popIn .2s var(--ease);
+}
+.spinner-lg { width: 34px; height: 34px; border-width: 3.5px; }
+.sending-title { font-size: 1rem; font-weight: 700; color: var(--ink-900); }
+.sending-desc { font-size: .82rem; color: var(--ink-500); }
 
 /* ══════════════════════════════════════════════════════════
    MODAIS — cabeçalho escuro + listra azul (padrão Inventário)
@@ -587,7 +607,7 @@ svg { flex-shrink: 0; }
 
 .form-modal-header {
   display: flex; justify-content: space-between; align-items: center; gap: 12px;
-  background: linear-gradient(135deg, #7dd3fc 0%, #dceffd 45%, #f8fafc 100%);
+  background: linear-gradient(135deg, #9aaec8 0%, #dde5f2 45%, #f8fafc 100%);
   padding: 14px 18px;
   border-radius: var(--r-lg) var(--r-lg) 0 0;
   flex-shrink: 0;
@@ -689,7 +709,7 @@ svg { flex-shrink: 0; }
 
 /* ══ TOASTS ══ */
 .toast-container {
-  position: fixed; top: 18px; right: 18px; z-index: 1100;
+  position: fixed; bottom: 18px; right: 18px; z-index: 1100;
   display: flex; flex-direction: column; gap: 9px;
   max-width: calc(100vw - 36px);
 }
@@ -730,7 +750,11 @@ svg { flex-shrink: 0; }
 }
 
 @media (max-width: 640px) {
-  .unit-card { padding: 30px 24px 26px; }
+  .unit-card-head { padding: 20px 20px 18px; }
+  .unit-card-body { padding: 36px 20px 40px; }
+  .unit-login-logo { width: 220px; }
+  .unit-login-tagline { font-size: .78rem; margin-bottom: 24px; }
+  .unit-card-title { font-size: 1.3rem; }
   .topbar { padding: 11px 16px; flex-wrap: wrap; }
   .topbar-sub { display: none; }
   .unit-chip { max-width: 100%; font-size: .75rem; }
@@ -738,6 +762,7 @@ svg { flex-shrink: 0; }
   .stats-row { grid-template-columns: 1fr; }
   .stat-card.total { grid-column: auto; }
   .panel-body { padding: 16px; }
+  .panel-body.flow-step { height: 440px; }
   .steps { padding: 12px 14px; }
   .step-lbl { display: none; }
   .pw-grid { grid-template-columns: 1fr; }
@@ -749,7 +774,7 @@ svg { flex-shrink: 0; }
   .info-grid { grid-template-columns: 1fr 1fr; }
   .modal-actions { flex-direction: column-reverse; }
   .modal-actions button { width: 100%; }
-  .toast-container { left: 12px; right: 12px; top: 12px; }
+  .toast-container { left: 12px; right: 12px; bottom: 12px; }
   .toast { min-width: 0; max-width: none; }
 }
 
