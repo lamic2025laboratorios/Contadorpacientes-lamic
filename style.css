@@ -612,7 +612,7 @@ svg { flex-shrink: 0; }
 
 .form-modal-header {
   display: flex; justify-content: space-between; align-items: center; gap: 12px;
-  background: linear-gradient(135deg, #9aaec8 0%, #dde5f2 45%, #f8fafc 100%);
+  background: linear-gradient(135deg, #647fa8 0%, #8fa5c7 50%, #b9c8de 100%);
   padding: 14px 18px;
   border-radius: var(--r-lg) var(--r-lg) 0 0;
   flex-shrink: 0;
