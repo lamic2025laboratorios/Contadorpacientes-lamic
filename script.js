@@ -169,7 +169,7 @@ document.querySelectorAll('.password-btn').forEach(btn => {
 });
 
 // Passo 3 — tipo de atendimento
-// Regra: cada atendimento registrado leva 10s (tela de carregamento) antes
+// Regra: cada atendimento registrado leva 5s (tela de carregamento) antes
 // de entrar na tabela — evita registrar em sequência rápida demais.
 document.querySelectorAll('.service-btn').forEach(btn => {
     btn.addEventListener('click', function () {
@@ -187,7 +187,7 @@ document.querySelectorAll('.service-btn').forEach(btn => {
             hideProcessingOverlay();
             isRegistering = false;
             showToast('Atendimento registrado com sucesso!', 'success');
-        }, 10000);
+        }, 5000);
     });
 });
 
