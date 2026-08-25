@@ -20,6 +20,9 @@ let pendingDeleteId = null;
 // ── Elementos DOM ──
 const unitSelection = document.getElementById('unitSelection');
 const mainInterface = document.getElementById('mainInterface');
+const unitPickerModal = document.getElementById('unitPickerModal');
+const openUnitPickerBtn = document.getElementById('openUnitPickerBtn');
+const closeUnitPickerBtn = document.getElementById('closeUnitPickerBtn');
 const unitSelect = document.getElementById('unitSelect');
 const confirmUnitBtn = document.getElementById('confirmUnitBtn');
 const unitSelectedInfo = document.getElementById('unitSelectedInfo');
@@ -88,6 +91,20 @@ unitSelect.addEventListener('change', function () {
     }
 });
 
+// Popup de seleção de unidade — fundo embaçado, sem cabeçalho escuro
+openUnitPickerBtn.addEventListener('click', function () {
+    unitPickerModal.classList.remove('hidden');
+});
+
+closeUnitPickerBtn.addEventListener('click', closeUnitPicker);
+unitPickerModal.addEventListener('click', function (e) {
+    if (e.target === unitPickerModal) closeUnitPicker();
+});
+
+function closeUnitPicker() {
+    unitPickerModal.classList.add('hidden');
+}
+
 confirmUnitBtn.addEventListener('click', function () {
     const selectedValue = unitSelect.value;
     if (!selectedValue) return;
@@ -96,6 +113,7 @@ confirmUnitBtn.addEventListener('click', function () {
     selectedUnitLabel = unitSelect.options[unitSelect.selectedIndex].text;
     selectedUnitDisplay.textContent = selectedUnitLabel;
 
+    closeUnitPicker();
     loadUnitData();
     showMainInterface();
 });
@@ -165,6 +183,7 @@ document.addEventListener('keydown', function (e) {
     if (e.key !== 'Escape') return;
     if (!confirmModal.classList.contains('hidden')) closeConfirmModal();
     else if (!editModal.classList.contains('hidden')) closeEditModal();
+    else if (!unitPickerModal.classList.contains('hidden')) closeUnitPicker();
 });
 
 // ══════════════════════════════════════════════════════════
@@ -174,6 +193,12 @@ function showUnitSelection() {
     unitSelection.classList.remove('hidden');
     mainInterface.classList.add('hidden');
     currentStep = 'unit';
+
+    // Deixa o popup pronto pra uma nova escolha
+    closeUnitPicker();
+    unitSelect.value = '';
+    confirmUnitBtn.disabled = true;
+    unitSelectedInfo.classList.add('hidden');
 }
 
 function showMainInterface() {
