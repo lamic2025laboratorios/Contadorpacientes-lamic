@@ -1,4 +1,32 @@
-// Estado da aplicação
+// ══════════════════════════════════════════════════════════
+// Contador de Pacientes — LAMIC
+// Estado, fluxo de registro (entrada → senha → atendimento),
+// persistência por unidade no localStorage e envio ao Sheets.
+// ══════════════════════════════════════════════════════════
+
+// ── Bloqueio de F12/Ctrl+Shift+I/Ctrl+U/clique-direito/F11 ──
+// AVISO: isso é só um freio pra quem não sabe mexer, não é segurança de
+// verdade. Chrome, Edge e Firefox atuais tratam F12, Ctrl+Shift+I e F11
+// como atalhos do PRÓPRIO NAVEGADOR — o preventDefault() abaixo não
+// impede nada nesses casos (o navegador nem repassa o evento pra
+// página). Quem quiser abrir o DevTools consegue pelo menu
+// (⋮ > Mais ferramentas > Ferramentas do desenvolvedor) de qualquer
+// jeito. O que este bloco realmente evita é o clique-direito e alguns
+// atalhos que o navegador ainda deixa a página interceptar.
+document.addEventListener('contextmenu', e => e.preventDefault());
+document.addEventListener('keydown', function (e) {
+    const key = e.key;
+    const blockedCombo =
+        key === 'F12' ||
+        key === 'F11' ||
+        (e.ctrlKey && e.shiftKey && ['I', 'i', 'J', 'j', 'C', 'c'].includes(key)) ||
+        (e.ctrlKey && ['U', 'u'].includes(key));
+    if (blockedCombo) e.preventDefault();
+});
+
+const ENDPOINT = 'https://script.google.com/macros/s/AKfycbzG5Btfs_2faCwxRmFOJabPR6IkJ4XszZX0l1bek9pwENLV01DCdCVNGf2vzrC6pT6B/exec';
+
+// ── Estado da aplicação ──
 let selectedUnit = '';
 let selectedUnitLabel = '';
 let counter = 0;
@@ -6,102 +34,237 @@ let records = [];
 let currentStep = 'unit';
 let currentPassword = '';
 let isSubmitting = false;
+let isRegistering = false;
 let editingRecordId = null;
+let pendingDeleteId = null;
 
-// Elementos DOM
+// ── Função oculta de zerar atendimentos (5 cliques no ícone do topbar) ──
+const SECRET_PASSWORD = 'seila1236';
+let secretClickCount = 0;
+let secretClickTimer = null;
+let secretArmed = false;
+
+// ── Elementos DOM ──
 const unitSelection = document.getElementById('unitSelection');
 const mainInterface = document.getElementById('mainInterface');
+const unitPickerModal = document.getElementById('unitPickerModal');
+const openUnitPickerBtn = document.getElementById('openUnitPickerBtn');
+const closeUnitPickerBtn = document.getElementById('closeUnitPickerBtn');
 const unitSelect = document.getElementById('unitSelect');
 const confirmUnitBtn = document.getElementById('confirmUnitBtn');
+const unitSelectedInfo = document.getElementById('unitSelectedInfo');
+const unitSelectedText = document.getElementById('unitSelectedText');
 const selectedUnitDisplay = document.getElementById('selectedUnitDisplay');
-const counterDisplay = document.getElementById('counterDisplay');
 const changeUnitBtn = document.getElementById('changeUnitBtn');
+
+const counterDisplay = document.getElementById('counterDisplay');
+const statPendentes = document.getElementById('statPendentes');
+const statEnviados = document.getElementById('statEnviados');
+
+const step1 = document.getElementById('step1');
+const step2 = document.getElementById('step2');
+const step3 = document.getElementById('step3');
+
 const entrySection = document.getElementById('entrySection');
 const entryBtn = document.getElementById('entryBtn');
 const passwordSection = document.getElementById('passwordSection');
 const serviceSection = document.getElementById('serviceSection');
+const flowRecap = document.getElementById('flowRecap');
+const flowRecapText = document.getElementById('flowRecapText');
+
 const recordsTableBody = document.getElementById('recordsTableBody');
+const recordsCount = document.getElementById('recordsCount');
 const noRecords = document.getElementById('noRecords');
+const tableWrap = document.querySelector('.table-wrap');
+
 const submitSection = document.getElementById('submitSection');
 const submitBtn = document.getElementById('submitBtn');
-const submitLoading = document.getElementById('submitLoading');
+const submitBtnLabel = document.getElementById('submitBtnLabel');
+const sendingOverlay = document.getElementById('sendingOverlay');
+const sendingTitle = document.getElementById('sendingTitle');
+const sendingDesc = document.getElementById('sendingDesc');
+
 const editModal = document.getElementById('editModal');
+const editHeaderSub = document.getElementById('editHeaderSub');
 const closeModalBtn = document.getElementById('closeModalBtn');
 const cancelEditBtn = document.getElementById('cancelEditBtn');
 const saveEditBtn = document.getElementById('saveEditBtn');
+
+const confirmModal = document.getElementById('confirmModal');
+const confirmDesc = document.getElementById('confirmDesc');
+const confirmCloseBtn = document.getElementById('confirmCloseBtn');
+const confirmCancelBtn = document.getElementById('confirmCancelBtn');
+const confirmOkBtn = document.getElementById('confirmOkBtn');
+
 const toastContainer = document.getElementById('toastContainer');
 
-// Event Listeners
-unitSelect.addEventListener('change', function() {
-    confirmUnitBtn.disabled = !this.value;
-});
+const topbarMark = document.getElementById('topbarMark');
+const secretResetModal = document.getElementById('secretResetModal');
+const secretPassword = document.getElementById('secretPassword');
+const secretError = document.getElementById('secretError');
+const secretWarning = document.getElementById('secretWarning');
+const secretCloseBtn = document.getElementById('secretCloseBtn');
+const secretCancelBtn = document.getElementById('secretCancelBtn');
+const secretConfirmBtn = document.getElementById('secretConfirmBtn');
+const secretConfirmLabel = document.getElementById('secretConfirmLabel');
 
-confirmUnitBtn.addEventListener('click', function() {
-    const selectedValue = unitSelect.value;
-    const selectedOption = unitSelect.options[unitSelect.selectedIndex];
-    
-    if (selectedValue) {
-        selectedUnit = selectedValue;
-        selectedUnitLabel = selectedOption.text;
-        selectedUnitDisplay.textContent = selectedUnitLabel;
-        
-        loadUnitData();
-        showMainInterface();
+// ── Ícones em SVG (sem emoji, seguindo o padrão do sistema) ──
+const ICON = {
+    edit: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.12 2.12 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>',
+    trash: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>',
+    check: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="M22 4L12 14.01l-3-3"/></svg>',
+    alert: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>'
+};
+
+// ══════════════════════════════════════════════════════════
+// EVENTOS
+// ══════════════════════════════════════════════════════════
+unitSelect.addEventListener('change', function () {
+    confirmUnitBtn.disabled = !this.value;
+    if (this.value) {
+        unitSelectedText.textContent = this.options[this.selectedIndex].text;
+        unitSelectedInfo.classList.remove('hidden');
+    } else {
+        unitSelectedInfo.classList.add('hidden');
     }
 });
 
-changeUnitBtn.addEventListener('click', function() {
+// Popup de seleção de unidade — fundo embaçado, sem cabeçalho escuro
+openUnitPickerBtn.addEventListener('click', function () {
+    unitPickerModal.classList.remove('hidden');
+});
+
+closeUnitPickerBtn.addEventListener('click', closeUnitPicker);
+unitPickerModal.addEventListener('click', function (e) {
+    if (e.target === unitPickerModal) closeUnitPicker();
+});
+
+function closeUnitPicker() {
+    unitPickerModal.classList.add('hidden');
+}
+
+confirmUnitBtn.addEventListener('click', function () {
+    const selectedValue = unitSelect.value;
+    if (!selectedValue) return;
+
+    selectedUnit = selectedValue;
+    selectedUnitLabel = unitSelect.options[unitSelect.selectedIndex].text;
+    selectedUnitDisplay.textContent = selectedUnitLabel;
+
+    closeUnitPicker();
+    loadUnitData();
+    showMainInterface();
+});
+
+changeUnitBtn.addEventListener('click', function () {
     showUnitSelection();
     resetCurrentEntry();
 });
 
-entryBtn.addEventListener('click', function() {
+entryBtn.addEventListener('click', function () {
     counter++;
     counterDisplay.textContent = counter;
     currentStep = 'password';
     showPasswordSection();
 });
 
-// Password buttons
+// Cancelar a entrada em andamento devolve o número usado
+document.querySelectorAll('.cancel-entry-btn').forEach(btn => {
+    btn.addEventListener('click', function () {
+        if (counter > 0) {
+            counter--;
+            counterDisplay.textContent = counter;
+        }
+        resetCurrentEntry();
+    });
+});
+
+// Passo 2 — tipo de senha
 document.querySelectorAll('.password-btn').forEach(btn => {
-    btn.addEventListener('click', function() {
+    btn.addEventListener('click', function () {
         currentPassword = this.dataset.password;
         currentStep = 'service';
         showServiceSection();
     });
 });
 
-// Service buttons
+// Passo 3 — tipo de atendimento
+// Regra: cada atendimento registrado leva 3s (tela de carregamento) antes
+// de entrar na tabela — evita registrar em sequência rápida demais.
 document.querySelectorAll('.service-btn').forEach(btn => {
-    btn.addEventListener('click', function() {
+    btn.addEventListener('click', function () {
+        if (isRegistering) return;
+        isRegistering = true;
+
         const serviceType = this.dataset.service;
-        createRecord(serviceType);
-        resetCurrentEntry();
-        updateTable();
-        saveUnitData();
-        showToast('Atendimento registrado com sucesso!', 'success');
+        showProcessingOverlay('Registrando atendimento...', 'Aguarde, isso leva alguns segundos.');
+
+        setTimeout(() => {
+            createRecord(serviceType);
+            resetCurrentEntry();
+            updateTable();
+            saveUnitData();
+            hideProcessingOverlay();
+            isRegistering = false;
+            showToast('Atendimento registrado com sucesso!', 'success');
+        }, 3000);
     });
 });
 
 submitBtn.addEventListener('click', handleSubmitPending);
 
-// Modal events
+// Modal de edição
 closeModalBtn.addEventListener('click', closeEditModal);
 cancelEditBtn.addEventListener('click', closeEditModal);
 saveEditBtn.addEventListener('click', saveEditRecord);
+editModal.addEventListener('click', e => { if (e.target === editModal) closeEditModal(); });
 
-// Modal click outside to close
-editModal.addEventListener('click', function(e) {
-    if (e.target === editModal) {
-        closeEditModal();
+// Modal de exclusão
+confirmCloseBtn.addEventListener('click', closeConfirmModal);
+confirmCancelBtn.addEventListener('click', closeConfirmModal);
+confirmOkBtn.addEventListener('click', confirmDeleteRecord);
+confirmModal.addEventListener('click', e => { if (e.target === confirmModal) closeConfirmModal(); });
+
+// Função oculta — 5 cliques no ícone do topbar abrem o popup de zerar atendimentos
+topbarMark.addEventListener('click', function () {
+    secretClickCount++;
+    clearTimeout(secretClickTimer);
+    secretClickTimer = setTimeout(() => { secretClickCount = 0; }, 1200);
+
+    if (secretClickCount >= 5) {
+        secretClickCount = 0;
+        openSecretResetModal();
     }
 });
 
-// Funções principais
+secretCloseBtn.addEventListener('click', closeSecretResetModal);
+secretCancelBtn.addEventListener('click', closeSecretResetModal);
+secretConfirmBtn.addEventListener('click', handleSecretConfirm);
+secretResetModal.addEventListener('click', e => { if (e.target === secretResetModal) closeSecretResetModal(); });
+secretPassword.addEventListener('keydown', e => { if (e.key === 'Enter') handleSecretConfirm(); });
+
+// Esc fecha qualquer popup aberto
+document.addEventListener('keydown', function (e) {
+    if (e.key !== 'Escape') return;
+    if (!confirmModal.classList.contains('hidden')) closeConfirmModal();
+    else if (!editModal.classList.contains('hidden')) closeEditModal();
+    else if (!secretResetModal.classList.contains('hidden')) closeSecretResetModal();
+    else if (!unitPickerModal.classList.contains('hidden')) closeUnitPicker();
+});
+
+// ══════════════════════════════════════════════════════════
+// NAVEGAÇÃO ENTRE TELAS E PASSOS
+// ══════════════════════════════════════════════════════════
 function showUnitSelection() {
     unitSelection.classList.remove('hidden');
     mainInterface.classList.add('hidden');
     currentStep = 'unit';
+
+    // Deixa o popup pronto pra uma nova escolha
+    closeUnitPicker();
+    unitSelect.value = '';
+    confirmUnitBtn.disabled = true;
+    unitSelectedInfo.classList.add('hidden');
 }
 
 function showMainInterface() {
@@ -114,43 +277,60 @@ function showMainInterface() {
 function showPasswordSection() {
     entrySection.classList.add('hidden');
     passwordSection.classList.remove('hidden');
+    passwordSection.classList.add('fade-in');
     serviceSection.classList.add('hidden');
+    updateSteps(2);
+
+    flowRecapText.innerHTML = `Atendimento <strong>#${counter}</strong> — o paciente retirou senha?`;
+    flowRecap.classList.remove('hidden');
 }
 
 function showServiceSection() {
     entrySection.classList.add('hidden');
     passwordSection.classList.add('hidden');
     serviceSection.classList.remove('hidden');
+    serviceSection.classList.add('fade-in');
+    updateSteps(3);
+
+    flowRecapText.innerHTML = `Atendimento <strong>#${counter}</strong> · <strong>${escapeHtml(currentPassword)}</strong> — qual foi o motivo?`;
 }
 
 function resetCurrentEntry() {
     entrySection.classList.remove('hidden');
     passwordSection.classList.add('hidden');
     serviceSection.classList.add('hidden');
+    flowRecap.classList.add('hidden');
     currentPassword = '';
     currentStep = 'entry';
+    updateSteps(1);
 }
 
-function generateId() {
-    return Date.now().toString() + Math.random().toString(36).substr(2, 9);
-}
-
-function getCurrentTime() {
-    const now = new Date();
-    return now.toLocaleTimeString('pt-BR', { 
-        hour: '2-digit', 
-        minute: '2-digit', 
-        second: '2-digit' 
+// Marca o passo atual como ativo e os anteriores como concluídos
+function updateSteps(active) {
+    [step1, step2, step3].forEach((el, i) => {
+        const num = i + 1;
+        el.classList.toggle('active', num === active);
+        el.classList.toggle('done', num < active);
     });
 }
 
+// ══════════════════════════════════════════════════════════
+// REGISTROS
+// ══════════════════════════════════════════════════════════
+function generateId() {
+    return Date.now().toString() + Math.random().toString(36).slice(2, 11);
+}
+
+function getCurrentTime() {
+    return new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+}
+
 function getCurrentDate() {
-    const now = new Date();
-    return now.toLocaleDateString('pt-BR');
+    return new Date().toLocaleDateString('pt-BR');
 }
 
 function createRecord(tipoAtendimento) {
-    const record = {
+    records.push({
         id: generateId(),
         numero: counter,
         unidade: selectedUnitLabel,
@@ -159,50 +339,61 @@ function createRecord(tipoAtendimento) {
         data: getCurrentDate(),
         hora: getCurrentTime(),
         status: 'pending'
-    };
-    
-    records.push(record);
+    });
+}
+
+function escapeHtml(value) {
+    return String(value == null ? '' : value)
+        .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
 }
 
 function updateTable() {
     if (records.length === 0) {
         recordsTableBody.innerHTML = '';
+        tableWrap.classList.add('hidden');
         noRecords.classList.remove('hidden');
         submitSection.classList.add('hidden');
+        updateStats();
         return;
     }
-    
+
     noRecords.classList.add('hidden');
-    
+    tableWrap.classList.remove('hidden');
+
     recordsTableBody.innerHTML = records.map(record => `
         <tr>
-            <td>${record.numero}</td>
-            <td>${record.unidade}</td>
-            <td>${record.tipoAtendimento}</td>
-            <td>${record.senha}</td>
-            <td>${record.hora}</td>
+            <td><span class="td-num">${escapeHtml(record.numero)}</span></td>
+            <td class="td-unidade">${escapeHtml(record.unidade)}</td>
+            <td>${escapeHtml(record.tipoAtendimento)}</td>
+            <td><span class="badge ${record.senha === 'Sem Senha' ? 'badge-sem' : 'badge-com'}">${escapeHtml(record.senha)}</span></td>
+            <td class="td-hora">${escapeHtml(record.hora)}</td>
+            <td><span class="badge badge-${getStatusBadgeClass(record.status)}">${getStatusText(record.status)}</span></td>
             <td>
-                <span class="badge badge-${getStatusBadgeClass(record.status)}">
-                    ${getStatusText(record.status)}
-                </span>
-            </td>
-            <td>
-                <button class="btn btn-outline btn-sm" onclick="editRecord('${record.id}')" style="margin-right: 0.5rem;">
-                    Editar
-                </button>
-                <button class="btn btn-destructive btn-sm" onclick="deleteRecord('${record.id}')">
-                    Excluir
-                </button>
+                <div class="td-acoes">
+                    <button class="btn-icon-sm edit" title="Editar" onclick="editRecord('${record.id}')">${ICON.edit}</button>
+                    <button class="btn-icon-sm del" title="Excluir" onclick="deleteRecord('${record.id}')">${ICON.trash}</button>
+                </div>
             </td>
         </tr>
     `).join('');
-    
-    const hasPendingRecords = records.some(record => record.status === 'pending');
-    if (hasPendingRecords) {
-        submitSection.classList.remove('hidden');
-    } else {
-        submitSection.classList.add('hidden');
-    }
+
+    const pendentes = records.filter(r => r.status === 'pending').length;
+    submitSection.classList.toggle('hidden', pendentes === 0);
+    submitBtnLabel.textContent = pendentes === 1
+        ? 'Enviar 1 pendente'
+        : `Enviar ${pendentes} pendentes`;
+
+    updateStats();
+}
+
+// Números dos cartões do topo e contador da tabela
+function updateStats() {
+    const pendentes = records.filter(r => r.status === 'pending').length;
+    const enviados = records.filter(r => r.status === 'sent').length;
+    statPendentes.textContent = pendentes;
+    statEnviados.textContent = enviados;
+    recordsCount.textContent = records.length === 1 ? '1 registro' : `${records.length} registros`;
 }
 
 function getStatusBadgeClass(status) {
@@ -221,19 +412,21 @@ function getStatusText(status) {
     }
 }
 
+// ══════════════════════════════════════════════════════════
+// EDIÇÃO
+// ══════════════════════════════════════════════════════════
 function editRecord(id) {
     const record = records.find(r => r.id === id);
     if (!record) return;
-    
+
     editingRecordId = id;
-    
-    // Preencher o modal
+    editHeaderSub.textContent = `Atendimento nº ${record.numero}`;
     document.getElementById('editTipoAtendimento').value = record.tipoAtendimento;
     document.getElementById('editSenha').value = record.senha;
     document.getElementById('editHoraDisplay').textContent = record.hora;
     document.getElementById('editUnidade').textContent = record.unidade;
     document.getElementById('editData').textContent = record.data;
-    
+
     editModal.classList.remove('hidden');
 }
 
@@ -244,38 +437,54 @@ function closeEditModal() {
 
 function saveEditRecord() {
     if (!editingRecordId) return;
-    
-    const recordIndex = records.findIndex(r => r.id === editingRecordId);
-    if (recordIndex === -1) return;
-    
-    const updatedData = {
+
+    const index = records.findIndex(r => r.id === editingRecordId);
+    if (index === -1) return;
+
+    records[index] = {
+        ...records[index],
         tipoAtendimento: document.getElementById('editTipoAtendimento').value,
         senha: document.getElementById('editSenha').value
     };
-    
-    records[recordIndex] = { ...records[recordIndex], ...updatedData };
-    
+
     updateTable();
     saveUnitData();
     closeEditModal();
     showToast('Atendimento atualizado com sucesso!', 'success');
 }
 
+// ══════════════════════════════════════════════════════════
+// EXCLUSÃO (popup próprio, no padrão do sistema)
+// ══════════════════════════════════════════════════════════
 function deleteRecord(id) {
-    if (!confirm('Tem certeza que deseja excluir este atendimento?')) return;
-    
-    records = records.filter(record => record.id !== id);
+    const record = records.find(r => r.id === id);
+    if (!record) return;
+
+    pendingDeleteId = id;
+    confirmDesc.textContent = `Atendimento nº ${record.numero} — ${record.tipoAtendimento}, às ${record.hora}. Esta ação não pode ser desfeita.`;
+    confirmModal.classList.remove('hidden');
+}
+
+function closeConfirmModal() {
+    confirmModal.classList.add('hidden');
+    pendingDeleteId = null;
+}
+
+function confirmDeleteRecord() {
+    if (!pendingDeleteId) return;
+
+    records = records.filter(record => record.id !== pendingDeleteId);
+    closeConfirmModal();
     updateTable();
     saveUnitData();
     showToast('Atendimento excluído com sucesso!', 'success');
 }
 
+// ══════════════════════════════════════════════════════════
+// PERSISTÊNCIA POR UNIDADE
+// ══════════════════════════════════════════════════════════
 function saveUnitData() {
-    const unitData = {
-        counter: counter,
-        records: records
-    };
-    localStorage.setItem(`patientData_${selectedUnit}`, JSON.stringify(unitData));
+    localStorage.setItem(`patientData_${selectedUnit}`, JSON.stringify({ counter, records }));
 }
 
 function loadUnitData() {
@@ -284,30 +493,43 @@ function loadUnitData() {
         const unitData = JSON.parse(savedData);
         counter = unitData.counter || 0;
         records = unitData.records || [];
-        counterDisplay.textContent = counter;
-        updateTable();
     } else {
         counter = 0;
         records = [];
-        counterDisplay.textContent = counter;
-        updateTable();
     }
+    counterDisplay.textContent = counter;
+    updateTable();
 }
 
+// ══════════════════════════════════════════════════════════
+// OVERLAY DE CARREGAMENTO (compartilhado: registro local e envio ao Sheets)
+// ══════════════════════════════════════════════════════════
+function showProcessingOverlay(title, desc) {
+    sendingTitle.textContent = title;
+    sendingDesc.textContent = desc;
+    sendingOverlay.classList.remove('hidden');
+}
+
+function hideProcessingOverlay() {
+    sendingOverlay.classList.add('hidden');
+}
+
+// ══════════════════════════════════════════════════════════
+// ENVIO PARA A PLANILHA
+// ══════════════════════════════════════════════════════════
 async function handleSubmitPending() {
     const pendingRecords = records.filter(record => record.status === 'pending');
-    
+
     if (pendingRecords.length === 0) {
         showToast('Não há dados pendentes para enviar', 'error');
         return;
     }
-    
     if (isSubmitting) return;
-    
+
     isSubmitting = true;
     submitBtn.disabled = true;
-    submitLoading.classList.remove('hidden');
-    
+    showProcessingOverlay('Enviando dados...', 'Aguarde, isso pode levar alguns segundos.');
+
     try {
         for (const record of pendingRecords) {
             const formData = new FormData();
@@ -317,62 +539,108 @@ async function handleSubmitPending() {
             formData.append('senha', record.senha);
             formData.append('data', record.data);
             formData.append('hora', record.hora);
-            
-            const response = await fetch('https://script.google.com/macros/s/AKfycbzG5Btfs_2faCwxRmFOJabPR6IkJ4XszZX0l1bek9pwENLV01DCdCVNGf2vzrC6pT6B/exec', {
-                method: 'POST',
-                body: formData
-            });
-            
+
+            const response = await fetch(ENDPOINT, { method: 'POST', body: formData });
+
             if (response.ok) {
-                // Marcar como enviado
-                const recordIndex = records.findIndex(r => r.id === record.id);
-                if (recordIndex !== -1) {
-                    records[recordIndex].status = 'sent';
-                }
+                const index = records.findIndex(r => r.id === record.id);
+                if (index !== -1) records[index].status = 'sent';
             }
-            
-            // Aguardar meio segundo entre envios
+
+            // Meio segundo entre envios para não sobrecarregar o Apps Script
             await new Promise(resolve => setTimeout(resolve, 500));
         }
-        
-        // Limpar dados após envio bem-sucedido
+
+        // Envio concluído: zera o dia da unidade
         records = [];
         counter = 0;
         counterDisplay.textContent = counter;
         updateTable();
-        
-        // Limpar localStorage também
         localStorage.removeItem(`patientData_${selectedUnit}`);
-        
+
         showToast('Todos os dados foram enviados com sucesso!', 'success');
-        
+
     } catch (error) {
         console.error('Erro ao enviar dados:', error);
         showToast('Erro ao enviar dados. Tente novamente.', 'error');
     } finally {
         isSubmitting = false;
         submitBtn.disabled = false;
-        submitLoading.classList.add('hidden');
+        hideProcessingOverlay();
     }
 }
 
+// ══════════════════════════════════════════════════════════
+// FUNÇÃO OCULTA — ZERAR ATENDIMENTOS
+// 5 cliques no ícone do topbar + senha. Existe pra apagar o histórico
+// de verdade (recepção não consegue "burlar" o contador excluindo
+// entradas uma a uma, já que excluir um registro não decrementa o
+// "Atendimentos hoje" nem o número usado nos próximos). Aviso: a
+// senha fica em texto no JS do navegador — qualquer um com DevTools
+// consegue ler o código-fonte e descobrir. Isso trava recepcionista
+// curioso, não é segurança de verdade contra alguém técnico.
+// ══════════════════════════════════════════════════════════
+function openSecretResetModal() {
+    secretArmed = false;
+    secretPassword.value = '';
+    secretError.classList.add('hidden');
+    secretWarning.classList.add('hidden');
+    secretConfirmLabel.textContent = 'Zerar Atendimentos';
+    secretResetModal.classList.remove('hidden');
+    setTimeout(() => secretPassword.focus(), 50);
+}
+
+function closeSecretResetModal() {
+    secretResetModal.classList.add('hidden');
+    secretArmed = false;
+}
+
+function handleSecretConfirm() {
+    if (!secretArmed) {
+        if (secretPassword.value !== SECRET_PASSWORD) {
+            secretError.classList.remove('hidden');
+            secretPassword.focus();
+            return;
+        }
+        secretError.classList.add('hidden');
+        secretWarning.classList.remove('hidden');
+        secretArmed = true;
+        secretConfirmLabel.textContent = 'Confirmar — apaga tudo';
+        return;
+    }
+
+    // Segundo clique com a senha já validada: zera de vez
+    records = [];
+    counter = 0;
+    counterDisplay.textContent = counter;
+    updateTable();
+    localStorage.removeItem(`patientData_${selectedUnit}`);
+
+    closeSecretResetModal();
+    showToast('Histórico de atendimentos zerado.', 'success');
+}
+
+// ══════════════════════════════════════════════════════════
+// TOASTS
+// ══════════════════════════════════════════════════════════
 function showToast(message, type = 'success') {
     const toast = document.createElement('div');
     toast.className = `toast ${type}`;
-    
     toast.innerHTML = `
-        <div class="toast-title">${type === 'success' ? 'Sucesso' : 'Erro'}</div>
-        <div class="toast-description">${message}</div>
+        <span class="toast-icon">${type === 'success' ? ICON.check : ICON.alert}</span>
+        <div>
+            <div class="toast-title">${type === 'success' ? 'Sucesso' : 'Erro'}</div>
+            <div class="toast-description">${escapeHtml(message)}</div>
+        </div>
     `;
-    
     toastContainer.appendChild(toast);
-    
-    setTimeout(() => {
-        toast.remove();
-    }, 4000);
+    setTimeout(() => toast.remove(), 4000);
 }
 
-// Inicialização
-document.addEventListener('DOMContentLoaded', function() {
+// ══════════════════════════════════════════════════════════
+// INICIALIZAÇÃO
+// ══════════════════════════════════════════════════════════
+document.addEventListener('DOMContentLoaded', function () {
     showUnitSelection();
+    updateSteps(1);
 });

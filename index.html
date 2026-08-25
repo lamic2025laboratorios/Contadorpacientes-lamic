@@ -3,19 +3,67 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Contador de Pacientes</title>
+    <title>Contador de Pacientes — LAMIC</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <!-- Seleção de Unidade -->
-    <div id="unitSelection" class="min-h-screen bg-background flex items-center justify-center p-4">
-        <div class="card w-full max-w-md">
-            <div class="card-header text-center">
-                <h1 class="text-2xl font-bold text-primary">Contador de Pacientes</h1>
-                <p class="text-muted-foreground">Selecione sua unidade</p>
+
+    <!-- ══════════════════════════════════════════════════════
+         TELA 1 — SELEÇÃO DE UNIDADE
+         ══════════════════════════════════════════════════════ -->
+    <div id="unitSelection" class="unit-screen">
+        <div class="unit-bg">
+            <div class="unit-bg-grid"></div>
+            <div class="unit-glow g1"></div>
+            <div class="unit-glow g2"></div>
+        </div>
+
+        <div class="unit-login-wrap">
+            <img class="unit-login-logo" src="lamic-logo-branca.png" alt="LAMIC">
+            <div class="unit-login-tagline">Sistema de Atendimento</div>
+
+            <div class="unit-card">
+                <div class="unit-card-head">
+                    <div class="unit-card-title">Contador de Pacientes</div>
+                    <div class="unit-card-sub">Selecione a unidade para continuar</div>
+                </div>
+                <div class="unit-card-body">
+                    <button id="openUnitPickerBtn" class="btn-primary unit-picker-trigger">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><path d="M9 22V12h6v10"/>
+                        </svg>
+                        Selecionar Unidade
+                    </button>
+                </div>
             </div>
-            <div class="card-content space-y-4">
-                <select id="unitSelect" class="select w-full">
+
+            <div class="unit-login-footer">Laboratório LAMIC · Sistema de Atendimento</div>
+        </div>
+    </div>
+
+    <!-- Popup — selecionar unidade (fundo embaçado, sem o cabeçalho escuro dos demais popups) -->
+    <div id="unitPickerModal" class="modal solid-backdrop hidden">
+        <div class="modal-content unit-picker-content">
+            <div class="upm-head">
+                <div class="upm-title">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><path d="M9 22V12h6v10"/>
+                    </svg>
+                    Selecionar Unidade
+                </div>
+                <button id="closeUnitPickerBtn" class="upm-close" title="Fechar">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M18 6L6 18M6 6l12 12"/>
+                    </svg>
+                </button>
+            </div>
+
+            <div class="upm-body">
+                <label class="form-label" for="unitSelect">Unidade</label>
+                <select id="unitSelect" class="input-light select-light">
                     <option value="">Escolha sua unidade</option>
                     <option value="1">Unidade 01 - Central, Juazeiro do Norte</option>
                     <option value="3">Unidade 03 - Crato</option>
@@ -32,116 +80,330 @@
                     <option value="88">Unidade 88 - Unicardio</option>
                     <option value="97">Unidade 97 - Endoclinic</option>
                 </select>
-                <button id="confirmUnitBtn" class="btn btn-primary w-full" disabled>Confirmar</button>
+
+                <div id="unitSelectedInfo" class="unit-selected-info hidden">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M20 6L9 17l-5-5"/>
+                    </svg>
+                    <span id="unitSelectedText"></span>
+                </div>
+
+                <button id="confirmUnitBtn" class="btn-primary full-width" style="margin-top:18px;" disabled>
+                    Confirmar e entrar
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M5 12h14M12 5l7 7-7 7"/>
+                    </svg>
+                </button>
             </div>
         </div>
     </div>
 
-    <!-- Interface Principal -->
-    <div id="mainInterface" class="hidden min-h-screen bg-background p-4">
-        <div class="container max-w-6xl mx-auto space-y-6">
-            <!-- Cabeçalho -->
-            <div class="card">
-                <div class="card-content text-center p-6">
-                    <h1 class="text-3xl font-bold text-primary">Contador de Pacientes</h1>
-                    <p id="selectedUnitDisplay" class="text-muted-foreground mt-2"></p>
-                    <div class="text-4xl font-bold text-primary mt-4">
-                        <span id="counterDisplay">0</span>
+    <!-- ══════════════════════════════════════════════════════
+         TELA 2 — ÁREA DE TRABALHO
+         ══════════════════════════════════════════════════════ -->
+    <div id="mainInterface" class="app-screen hidden">
+
+        <!-- Barra superior -->
+        <div class="topbar">
+            <div class="topbar-left">
+                <div id="topbarMark" class="topbar-mark">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/>
+                    </svg>
+                </div>
+                <div>
+                    <div class="topbar-name">Contador de Pacientes</div>
+                    <div class="topbar-sub">LAMIC · Atendimento</div>
+                </div>
+            </div>
+            <div class="topbar-right">
+                <div class="unit-chip">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M3 21h18M5 21V7l8-4v18M19 21V11l-6-4"/><path d="M9 9v.01M9 12v.01M9 15v.01M9 18v.01"/>
+                    </svg>
+                    <span id="selectedUnitDisplay"></span>
+                </div>
+                <button id="changeUnitBtn" class="btn-topbar">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M3 12a9 9 0 0 1 9-9 9 9 0 0 1 6.7 3L21 8"/><path d="M21 3v5h-5"/>
+                        <path d="M21 12a9 9 0 0 1-9 9 9 9 0 0 1-6.7-3L3 16"/><path d="M3 21v-5h5"/>
+                    </svg>
+                    Trocar unidade
+                </button>
+            </div>
+        </div>
+
+        <div class="app-container">
+
+            <!-- Números do dia -->
+            <div class="stats-row">
+                <div class="stat-card total">
+                    <div class="stat-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/>
+                            <path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/>
+                        </svg>
                     </div>
-                    <button id="changeUnitBtn" class="btn btn-outline mt-4">Trocar Unidade</button>
+                    <div>
+                        <div class="stat-num" id="counterDisplay">0</div>
+                        <div class="stat-lbl">Atendimentos hoje</div>
+                    </div>
+                </div>
+                <div class="stat-card pend">
+                    <div class="stat-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>
+                        </svg>
+                    </div>
+                    <div>
+                        <div class="stat-num" id="statPendentes">0</div>
+                        <div class="stat-lbl">Pendentes</div>
+                    </div>
+                </div>
+                <div class="stat-card sent">
+                    <div class="stat-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="M22 4L12 14.01l-3-3"/>
+                        </svg>
+                    </div>
+                    <div>
+                        <div class="stat-num" id="statEnviados">0</div>
+                        <div class="stat-lbl">Enviados</div>
+                    </div>
                 </div>
             </div>
 
-            <!-- Botão de Entrada -->
-            <div id="entrySection" class="text-center">
-                <button id="entryBtn" class="btn btn-primary btn-lg">Nova Entrada</button>
+            <div class="app-columns">
+            <div class="col-left">
+
+            <!-- Fluxo de registro -->
+            <div class="panel panel-locked">
+                <div class="steps">
+                    <div class="step" id="step1">
+                        <div class="step-num">1</div>
+                        <div class="step-lbl">Entrada</div>
+                    </div>
+                    <div class="step-line"></div>
+                    <div class="step" id="step2">
+                        <div class="step-num">2</div>
+                        <div class="step-lbl">Tipo de senha</div>
+                    </div>
+                    <div class="step-line"></div>
+                    <div class="step" id="step3">
+                        <div class="step-num">3</div>
+                        <div class="step-lbl">Tipo de atendimento</div>
+                    </div>
+                </div>
+
+                <!-- Recap fixo: some no passo 1, aparece nos passos 2 e 3 -->
+                <div id="flowRecap" class="flow-recap hidden">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/>
+                    </svg>
+                    <span id="flowRecapText"></span>
+                </div>
+
+                <!-- Passo 1 -->
+                <div id="entrySection" class="panel-body flow-step">
+                    <div class="entry-box">
+                        <button id="entryBtn" class="btn-primary btn-lg">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M12 5v14M5 12h14"/>
+                            </svg>
+                            Nova Entrada
+                        </button>
+                        <span class="entry-hint">Registre a chegada de um paciente na recepção.</span>
+                    </div>
+                </div>
+
+                <!-- Passo 2 -->
+                <div id="passwordSection" class="panel-body flow-step hidden">
+                    <div class="pw-grid">
+                        <button class="pw-opt com password-btn" data-password="Com Senha">
+                            <span class="pw-icon">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M2 9V7a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v2a3 3 0 0 0 0 6v2a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2v-2a3 3 0 0 0 0-6z"/>
+                                    <path d="M13 5v2M13 11v2M13 17v2"/>
+                                </svg>
+                            </span>
+                            <span>
+                                <span class="pw-title">Com Senha</span>
+                                <span class="pw-desc">Retirou senha no totem</span>
+                            </span>
+                        </button>
+                        <button class="pw-opt sem password-btn" data-password="Sem Senha">
+                            <span class="pw-icon">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M2 9V7a2 2 0 0 1 2-2h11"/><path d="M22 15v2a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2v-2a3 3 0 0 0 0-6"/>
+                                    <path d="M22 9V7a2 2 0 0 0-.4-1.2"/><path d="M22 9a3 3 0 0 0 0 6"/><path d="M3 3l18 18"/>
+                                </svg>
+                            </span>
+                            <span>
+                                <span class="pw-title">Sem Senha</span>
+                                <span class="pw-desc">Foi direto à recepção</span>
+                            </span>
+                        </button>
+                    </div>
+                    <div style="display:flex;justify-content:center;margin-top:16px;">
+                        <button class="btn-secondary cancel-entry-btn">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M18 6L6 18M6 6l12 12"/>
+                            </svg>
+                            Cancelar entrada
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Passo 3 -->
+                <div id="serviceSection" class="panel-body flow-step hidden">
+                    <!-- Só esta lista rola — cabeçalho e "Cancelar" acima/abaixo ficam fixos -->
+                    <div class="svc-scroll">
+                        <div class="svc-group">
+                            <div class="svc-group-title">Orçamento</div>
+                            <div class="svc-grid">
+                                <button class="svc-btn c-blue service-btn" data-service="Orçamento exame"><span class="svc-dot"></span>Orçamento exame</button>
+                                <button class="svc-btn c-blue service-btn" data-service="Orçamento vacina"><span class="svc-dot"></span>Orçamento vacina</button>
+                            </div>
+                        </div>
+
+                        <div class="svc-group">
+                            <div class="svc-group-title">Coleta e aplicação</div>
+                            <div class="svc-grid">
+                                <button class="svc-btn c-green service-btn" data-service="Coleta na unidade"><span class="svc-dot"></span>Coleta na unidade</button>
+                                <button class="svc-btn c-green service-btn" data-service="Coleta a domicilio"><span class="svc-dot"></span>Coleta a domicilio</button>
+                                <button class="svc-btn c-green service-btn" data-service="Aplicação de vacina"><span class="svc-dot"></span>Aplicação de vacina</button>
+                                <button class="svc-btn c-green service-btn" data-service="Entrega de Material"><span class="svc-dot"></span>Entrega de Material</button>
+                                <button class="svc-btn c-green service-btn" data-service="Toxicológico"><span class="svc-dot"></span>Toxicológico</button>
+                            </div>
+                        </div>
+
+                        <div class="svc-group">
+                            <div class="svc-group-title">Informações e resultados</div>
+                            <div class="svc-grid">
+                                <button class="svc-btn c-teal service-btn" data-service="Resultado"><span class="svc-dot"></span>Resultado</button>
+                                <button class="svc-btn c-teal service-btn" data-service="Informações Gerais"><span class="svc-dot"></span>Informações Gerais</button>
+                                <button class="svc-btn c-teal service-btn" data-service="Informações exames"><span class="svc-dot"></span>Informações exames</button>
+                                <button class="svc-btn c-teal service-btn" data-service="Informações vacinas"><span class="svc-dot"></span>Informações vacinas</button>
+                            </div>
+                        </div>
+
+                        <div class="svc-group">
+                            <div class="svc-group-title">Cadastro e outros</div>
+                            <div class="svc-grid">
+                                <button class="svc-btn c-purple service-btn" data-service="Cadastro de paciente"><span class="svc-dot"></span>Cadastro de paciente</button>
+                                <button class="svc-btn c-purple service-btn" data-service="Outro motivo"><span class="svc-dot"></span>Outro motivo</button>
+                                <button class="svc-btn danger service-btn" data-service="Não atendido"><span class="svc-dot"></span>Não atendido</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="svc-cancel-row">
+                        <button class="btn-secondary cancel-entry-btn">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M18 6L6 18M6 6l12 12"/>
+                            </svg>
+                            Cancelar entrada
+                        </button>
+                    </div>
+                </div>
             </div>
 
-            <!-- Seleção de Senha -->
-            <div id="passwordSection" class="hidden card">
-                <div class="card-header">
-                    <h3 class="card-title">Tipo de Senha</h3>
-                </div>
-                <div class="card-content grid grid-cols-2 gap-4">
-                    <button class="btn btn-password-with password-btn" data-password="Com Senha">Com Senha</button>
-                    <button class="btn btn-password-without password-btn" data-password="Sem Senha">Sem Senha</button>
-                </div>
             </div>
 
-            <!-- Seleção de Tipo de Atendimento -->
-            <div id="serviceSection" class="hidden card">
-                <div class="card-header">
-                    <h3 class="card-title">Tipo de Atendimento</h3>
-                </div>
-                <div class="card-content grid grid-cols-2 md:grid-cols-3 gap-3">
-                    <button class="btn btn-outline service-btn" data-service="Orçamento exame">Orçamento exame</button>
-                    <button class="btn btn-outline service-btn" data-service="Orçamento vacina">Orçamento vacina</button>
-                    <button class="btn btn-outline service-btn" data-service="Resultado">Resultado</button>
-                    <button class="btn btn-outline service-btn" data-service="Aplicação de vacina">Aplicação de vacina</button>
-                    <button class="btn btn-outline service-btn" data-service="Coleta a domicilio">Coleta a domicilio</button>
-                    <button class="btn btn-outline service-btn" data-service="Coleta na unidade">Coleta na unidade</button>
-                    <button class="btn btn-outline service-btn" data-service="Cadastro de paciente">Cadastro de paciente</button>
-                    <button class="btn btn-outline service-btn" data-service="Entrega de Material">Entrega de Material</button>
-                    <button class="btn btn-outline service-btn" data-service="Outro motivo">Outro motivo</button>
-                    <button class="btn btn-outline service-btn" data-service="Informações Gerais">Informações Gerais</button>
-                    <button class="btn btn-outline service-btn" data-service="Informações vacinas">Informações vacinas</button>
-                    <button class="btn btn-outline service-btn" data-service="Informações exames">Informações exames</button>
-                    <button class="btn btn-outline service-btn" data-service="Toxicológico">Toxicológico</button>
-                    <button class="btn btn-outline-danger service-btn" data-service="Não atendido">Não atendido</button>
-                </div>
-            </div>
+            <div class="col-right">
 
-            <!-- Tabela de Pacientes -->
-            <div class="card">
-                <div class="card-header">
-                    <h3 class="card-title">Registro de Atendimentos</h3>
+            <!-- Tabela + envio (mesmo painel: botão de enviar fica embaixo, bem discreto) -->
+            <div class="panel panel-locked">
+                <div class="panel-head">
+                    <div class="panel-head-left">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/>
+                        </svg>
+                        <span class="panel-title">Registro de Atendimentos</span>
+                    </div>
+                    <span class="count-pill" id="recordsCount">0 registros</span>
                 </div>
-                <div class="card-content">
-                    <div class="table-responsive">
-                        <table class="table">
+
+                <!-- O que passar da altura, rola só aqui dentro -->
+                <div class="table-scroll">
+                    <div class="table-wrap">
+                        <table class="data-table">
                             <thead>
                                 <tr>
                                     <th>Nº</th>
                                     <th>Unidade</th>
-                                    <th>Tipo</th>
+                                    <th>Tipo de atendimento</th>
                                     <th>Senha</th>
                                     <th>Hora</th>
                                     <th>Status</th>
-                                    <th>Ações</th>
+                                    <th style="text-align:right;">Ações</th>
                                 </tr>
                             </thead>
-                            <tbody id="recordsTableBody">
-                            </tbody>
+                            <tbody id="recordsTableBody"></tbody>
                         </table>
                     </div>
-                    <div id="noRecords" class="text-center text-muted-foreground py-8">
-                        Nenhum atendimento registrado ainda.
+
+                    <div id="noRecords" class="empty-state">
+                        <div class="empty-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M22 12h-6l-2 3h-4l-2-3H2"/>
+                                <path d="M5.45 5.11L2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/>
+                            </svg>
+                        </div>
+                        <div class="empty-title">Nenhum atendimento registrado</div>
+                        <div class="empty-desc">Toque em "Nova Entrada" para registrar o primeiro paciente.</div>
                     </div>
+                </div>
+
+                <!-- Envio — só o botão, bem discreto, no finalzinho da div -->
+                <div id="submitSection" class="panel-foot hidden">
+                    <button id="submitBtn" class="btn-send-quiet">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M17 8l-5-5-5 5"/><path d="M12 3v12"/>
+                        </svg>
+                        <span id="submitBtnLabel">Enviar dados pendentes</span>
+                    </button>
                 </div>
             </div>
 
-            <!-- Botão de Envio -->
-            <div id="submitSection" class="hidden text-center">
-                <button id="submitBtn" class="btn btn-success btn-lg">Enviar Dados Pendentes</button>
-                <div id="submitLoading" class="hidden mt-4">
-                    <div class="spinner"></div>
-                    <p class="text-muted-foreground">Enviando dados...</p>
-                </div>
             </div>
+            </div>
+
         </div>
     </div>
 
-    <!-- Modal de Edição -->
+    <!-- ══════════════════════════════════════════════════════
+         MODAL — EDIÇÃO
+         ══════════════════════════════════════════════════════ -->
     <div id="editModal" class="modal hidden">
         <div class="modal-content">
-            <div class="modal-header">
-                <h3>Editar Atendimento</h3>
-                <button id="closeModalBtn" class="close-btn">&times;</button>
+            <div class="form-modal-header">
+                <div class="fmh-left">
+                    <div class="fmh-icon-box">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                            <path d="M18.5 2.5a2.12 2.12 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                        </svg>
+                    </div>
+                    <div>
+                        <div class="fmh-name">Editar Atendimento</div>
+                        <div class="fmh-sub" id="editHeaderSub">Registro</div>
+                    </div>
+                </div>
+                <div class="fmh-right">
+                    <button id="closeModalBtn" class="fmh-icon-btn" title="Fechar">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M18 6L6 18M6 6l12 12"/>
+                        </svg>
+                    </button>
+                </div>
             </div>
-            <div class="modal-body space-y-4">
-                <div>
+            <div class="form-modal-stripe"></div>
+
+            <div class="form-modal-scroll">
+                <div class="form-group">
                     <label for="editTipoAtendimento">Tipo de Atendimento</label>
-                    <select id="editTipoAtendimento" class="select w-full">
+                    <select id="editTipoAtendimento" class="input-light select-light">
                         <option value="Orçamento exame">Orçamento exame</option>
                         <option value="Orçamento vacina">Orçamento vacina</option>
                         <option value="Resultado">Resultado</option>
@@ -158,38 +420,153 @@
                         <option value="Não atendido">Não atendido</option>
                     </select>
                 </div>
-                <div>
+
+                <div class="form-group">
                     <label for="editSenha">Tipo de Senha</label>
-                    <select id="editSenha" class="select w-full">
+                    <select id="editSenha" class="input-light select-light">
                         <option value="Com Senha">Com Senha</option>
                         <option value="Sem Senha">Sem Senha</option>
                     </select>
                 </div>
-                <div class="grid grid-cols-2 gap-4 text-sm text-muted-foreground">
-                    <div>
-                        <label class="text-xs">Hora:</label>
-                        <p id="editHoraDisplay"></p>
+
+                <div class="info-grid">
+                    <div class="info-box">
+                        <div class="info-lbl">Hora</div>
+                        <div class="info-val" id="editHoraDisplay">—</div>
                     </div>
-                </div>
-                <div class="grid grid-cols-2 gap-4 text-sm text-muted-foreground">
-                    <div>
-                        <label class="text-xs">Unidade:</label>
-                        <p id="editUnidade"></p>
+                    <div class="info-box">
+                        <div class="info-lbl">Data</div>
+                        <div class="info-val" id="editData">—</div>
                     </div>
-                    <div>
-                        <label class="text-xs">Data:</label>
-                        <p id="editData"></p>
+                    <div class="info-box" style="grid-column:1 / -1;">
+                        <div class="info-lbl">Unidade</div>
+                        <div class="info-val" id="editUnidade">—</div>
                     </div>
                 </div>
             </div>
-            <div class="modal-footer">
-                <button id="cancelEditBtn" class="btn btn-outline">Cancelar</button>
-                <button id="saveEditBtn" class="btn btn-primary">Salvar Alterações</button>
+
+            <div class="modal-actions">
+                <button id="cancelEditBtn" class="btn-secondary">Cancelar</button>
+                <button id="saveEditBtn" class="btn-primary">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M20 6L9 17l-5-5"/>
+                    </svg>
+                    Salvar alterações
+                </button>
             </div>
         </div>
     </div>
 
-    <!-- Toast Container -->
+    <!-- ══════════════════════════════════════════════════════
+         MODAL — CONFIRMAR EXCLUSÃO
+         ══════════════════════════════════════════════════════ -->
+    <div id="confirmModal" class="modal hidden">
+        <div class="modal-content" style="max-width:420px;">
+            <div class="form-modal-header">
+                <div class="fmh-left">
+                    <div class="fmh-icon-box">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                            <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
+                        </svg>
+                    </div>
+                    <div class="fmh-name">Excluir Atendimento</div>
+                </div>
+                <div class="fmh-right">
+                    <button id="confirmCloseBtn" class="fmh-icon-btn" title="Fechar">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M18 6L6 18M6 6l12 12"/>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+            <div class="form-modal-stripe"></div>
+
+            <div class="confirm-body">
+                <div class="confirm-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+                        <path d="M12 9v4M12 17h.01"/>
+                    </svg>
+                </div>
+                <div>
+                    <div class="confirm-title">Excluir este registro?</div>
+                    <div class="confirm-desc" id="confirmDesc">Esta ação não pode ser desfeita.</div>
+                </div>
+            </div>
+
+            <div class="modal-actions">
+                <button id="confirmCancelBtn" class="btn-secondary">Cancelar</button>
+                <button id="confirmOkBtn" class="btn-danger">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                        <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
+                    </svg>
+                    Excluir
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════════════════
+         POPUP OCULTO — zerar atendimentos (5 cliques no ícone do
+         topbar abrem este popup; exige senha)
+         ══════════════════════════════════════════════════════ -->
+    <div id="secretResetModal" class="modal hidden">
+        <div class="modal-content" style="max-width:400px;">
+            <div class="form-modal-header">
+                <div class="fmh-left">
+                    <div class="fmh-icon-box">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                        </svg>
+                    </div>
+                    <div class="fmh-name">Área Restrita</div>
+                </div>
+                <div class="fmh-right">
+                    <button id="secretCloseBtn" class="fmh-icon-btn" title="Fechar">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M18 6L6 18M6 6l12 12"/>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+            <div class="form-modal-stripe"></div>
+
+            <div class="form-modal-scroll">
+                <div class="form-group">
+                    <label for="secretPassword">Senha de acesso</label>
+                    <input type="password" id="secretPassword" class="input-light" placeholder="Digite a senha" autocomplete="off">
+                </div>
+                <div id="secretError" class="secret-error hidden">Senha incorreta.</div>
+                <div id="secretWarning" class="secret-warning hidden">
+                    Isso apaga <strong>todo o histórico de atendimentos</strong> desta unidade (enviados e pendentes) e zera o contador de hoje. Não pode ser desfeito. Clique em "Confirmar" de novo pra zerar.
+                </div>
+            </div>
+
+            <div class="modal-actions">
+                <button id="secretCancelBtn" class="btn-secondary">Cancelar</button>
+                <button id="secretConfirmBtn" class="btn-danger">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                        <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
+                    </svg>
+                    <span id="secretConfirmLabel">Zerar Atendimentos</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Overlay de envio — fundo borrado cobrindo a tela inteira -->
+    <div id="sendingOverlay" class="modal hidden">
+        <div class="sending-card">
+            <div class="spinner spinner-lg"></div>
+            <div id="sendingTitle" class="sending-title">Enviando dados...</div>
+            <div id="sendingDesc" class="sending-desc">Aguarde, isso pode levar alguns segundos.</div>
+        </div>
+    </div>
+
+    <!-- Toasts -->
     <div id="toastContainer" class="toast-container"></div>
 
     <script src="script.js"></script>
