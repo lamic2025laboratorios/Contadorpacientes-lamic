@@ -4,6 +4,26 @@
 // persistência por unidade no localStorage e envio ao Sheets.
 // ══════════════════════════════════════════════════════════
 
+// ── Bloqueio de F12/Ctrl+Shift+I/Ctrl+U/clique-direito/F11 ──
+// AVISO: isso é só um freio pra quem não sabe mexer, não é segurança de
+// verdade. Chrome, Edge e Firefox atuais tratam F12, Ctrl+Shift+I e F11
+// como atalhos do PRÓPRIO NAVEGADOR — o preventDefault() abaixo não
+// impede nada nesses casos (o navegador nem repassa o evento pra
+// página). Quem quiser abrir o DevTools consegue pelo menu
+// (⋮ > Mais ferramentas > Ferramentas do desenvolvedor) de qualquer
+// jeito. O que este bloco realmente evita é o clique-direito e alguns
+// atalhos que o navegador ainda deixa a página interceptar.
+document.addEventListener('contextmenu', e => e.preventDefault());
+document.addEventListener('keydown', function (e) {
+    const key = e.key;
+    const blockedCombo =
+        key === 'F12' ||
+        key === 'F11' ||
+        (e.ctrlKey && e.shiftKey && ['I', 'i', 'J', 'j', 'C', 'c'].includes(key)) ||
+        (e.ctrlKey && ['U', 'u'].includes(key));
+    if (blockedCombo) e.preventDefault();
+});
+
 const ENDPOINT = 'https://script.google.com/macros/s/AKfycbzG5Btfs_2faCwxRmFOJabPR6IkJ4XszZX0l1bek9pwENLV01DCdCVNGf2vzrC6pT6B/exec';
 
 // ── Estado da aplicação ──
