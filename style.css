@@ -321,19 +321,27 @@ svg { flex-shrink: 0; }
 .step.done .step-lbl { color: var(--ink-500); }
 .step-line { flex: 1; height: 2px; background: var(--surf-border); margin: 0 12px; border-radius: 2px; min-width: 20px; }
 
-/* Painel de entrada travado numa altura só — não cresce/encolhe entre os
-   passos 1/2/3. Passo 1 e 2 centralizam o conteúdo (curto); o passo 3
-   (lista de tipos) usa o espaço todo com cabeçalho fixo + lista rolável. */
+/* Painel de entrada e painel de Registro de Atendimentos travados na
+   MESMA altura fixa (.panel-locked) — nenhum dos dois cresce/encolhe
+   conforme os dados. O que passar da altura rola só por dentro
+   (.svc-scroll no passo 3, .table-scroll no Registro). */
+.panel-locked { display: flex; flex-direction: column; height: 600px; }
+.panel-locked > .steps, .panel-locked > .panel-head { flex-shrink: 0; }
+.panel-locked > .panel-foot { flex-shrink: 0; }
+.table-scroll { flex: 1 1 auto; min-height: 0; overflow-y: auto; }
+
 .panel-body.flow-step {
-  height: 520px;
+  flex: 1 1 auto; min-height: 0;
   display: flex; flex-direction: column;
   overflow: hidden;
 }
 #entrySection.flow-step, #passwordSection.flow-step { justify-content: center; }
 #serviceSection.flow-step { justify-content: flex-start; }
-#serviceSection .flow-recap { flex-shrink: 0; }
 .svc-scroll { flex: 1 1 auto; min-height: 0; overflow-y: auto; padding-right: 4px; margin-right: -4px; }
 .svc-cancel-row { flex-shrink: 0; display: flex; justify-content: center; margin-top: 14px; }
+
+/* Recap fixo (passo 2 e 3) — direto no .panel-locked, acima dos passos */
+.panel-locked > .flow-recap { flex-shrink: 0; margin: 14px 20px 0; }
 
 /* ── Passo 1: nova entrada ── */
 .entry-box { display: flex; flex-direction: column; align-items: center; gap: 12px; padding: 14px 0 6px; }
@@ -403,6 +411,13 @@ svg { flex-shrink: 0; }
 .svc-btn.c-green  .svc-dot { background: var(--green); }
 .svc-btn.c-purple .svc-dot { background: var(--purple); }
 .svc-btn.c-orange .svc-dot { background: var(--orange); }
+
+/* Faixa lateral por categoria — só identificação visual, sem outro significado */
+.svc-btn.c-blue   { border-left: 3px solid var(--blue-300); }
+.svc-btn.c-teal   { border-left: 3px solid var(--teal); }
+.svc-btn.c-green  { border-left: 3px solid var(--green); }
+.svc-btn.c-purple { border-left: 3px solid var(--purple); }
+.svc-btn.c-orange { border-left: 3px solid var(--orange); }
 
 .svc-btn.danger {
   border-color: rgba(217, 64, 64, .35); background: #fff6f6; color: #a32222;
@@ -488,6 +503,7 @@ svg { flex-shrink: 0; }
   border-bottom: 1.5px solid var(--surf-border);
   background: var(--surf-1);
   white-space: nowrap;
+  position: sticky; top: 0; z-index: 1;
 }
 .data-table td {
   padding: 12px 16px;
@@ -534,29 +550,18 @@ svg { flex-shrink: 0; }
 .empty-title { font-size: .92rem; font-weight: 700; color: var(--ink-500); }
 .empty-desc { font-size: .82rem; color: var(--ink-300); }
 
-/* ══ ENVIO ══ */
-.submit-panel {
-  display: flex; align-items: center; justify-content: space-between; gap: 18px;
-  flex-wrap: wrap;
-  padding: 18px 22px;
-  background: linear-gradient(135deg, #f0fdf7, var(--surf-0));
-  border: 1px solid #c7ecdb;
-  border-left: 4px solid var(--green);
-  border-radius: var(--r-lg);
-  box-shadow: var(--shadow-card);
+/* ══ ENVIO — só o botão, discreto, no rodapé da div de Registro ══ */
+.panel-foot { padding: 8px 14px; border-top: 1px solid var(--surf-border); display: flex; justify-content: flex-end; flex-shrink: 0; }
+.btn-send-quiet {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: none; border: 1px solid var(--surf-border); color: var(--ink-500);
+  border-radius: var(--r-sm); padding: 6px 13px;
+  font-family: inherit; font-size: .78rem; font-weight: 700;
+  cursor: pointer; transition: all .15s var(--ease);
 }
-.submit-info { display: flex; align-items: center; gap: 13px; min-width: 0; }
-.submit-info-icon {
-  width: 42px; height: 42px; border-radius: 11px; flex-shrink: 0;
-  display: flex; align-items: center; justify-content: center;
-  background: rgba(29, 184, 122, .13); color: var(--green);
-}
-.submit-info-icon svg { width: 21px; height: 21px; }
-.submit-title { font-size: .95rem; font-weight: 700; color: var(--ink-900); }
-.submit-desc { font-size: .8rem; color: var(--ink-500); }
-
-/* Envio agora vive dentro do painel de Registro de Atendimentos, embaixo da tabela */
-.panel-foot { padding: 16px 20px 20px; border-top: 1px solid var(--surf-border); }
+.btn-send-quiet:hover:not(:disabled) { background: var(--surf-2); color: var(--ink-900); border-color: #c7d3e8; }
+.btn-send-quiet:disabled { opacity: .45; cursor: not-allowed; }
+.btn-send-quiet svg { width: 13px; height: 13px; }
 
 .spinner {
   width: 20px; height: 20px; flex-shrink: 0;
@@ -633,8 +638,11 @@ svg { flex-shrink: 0; }
 
 .form-modal-stripe {
   height: 4px; flex-shrink: 0;
-  background: linear-gradient(90deg, #38bdf8, var(--blue-400));
+  background: var(--navy-600);
 }
+
+/* Popup de unidade — fundo praticamente sólido, só a div aparece */
+.modal.solid-backdrop { background: rgba(6, 13, 26, .94); backdrop-filter: blur(8px); }
 
 /* Popup de selecionar unidade — exceção: sem o cabeçalho escuro dos demais */
 .unit-picker-content { max-width: 420px; }
@@ -679,6 +687,21 @@ svg { flex-shrink: 0; }
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%236680a0' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
   background-repeat: no-repeat; background-position: right 11px center;
 }
+
+.secret-error {
+  display: flex; align-items: center; gap: 8px;
+  color: var(--red); font-size: .82rem; font-weight: 600;
+  padding: 9px 12px; margin-top: 10px;
+  background: rgba(217, 64, 64, .08); border: 1px solid rgba(217, 64, 64, .22);
+  border-radius: var(--r-sm);
+}
+.secret-warning {
+  font-size: .8rem; line-height: 1.5; color: #92400e;
+  padding: 12px 14px; margin-top: 14px;
+  background: #fff8ed; border: 1px solid #fde68a;
+  border-radius: var(--r-sm);
+}
+.secret-warning strong { color: #78350f; }
 
 .info-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 4px; }
 .info-box {
@@ -762,14 +785,12 @@ svg { flex-shrink: 0; }
   .stats-row { grid-template-columns: 1fr; }
   .stat-card.total { grid-column: auto; }
   .panel-body { padding: 16px; }
-  .panel-body.flow-step { height: 440px; }
+  .panel-locked { height: 460px; }
   .steps { padding: 12px 14px; }
   .step-lbl { display: none; }
   .pw-grid { grid-template-columns: 1fr; }
   .svc-grid { grid-template-columns: 1fr 1fr; }
   .svc-btn { font-size: .8rem; padding: 11px 12px; }
-  .submit-panel { flex-direction: column; align-items: stretch; }
-  .submit-panel .btn-success { width: 100%; }
   .data-table th, .data-table td { padding: 10px 11px; }
   .info-grid { grid-template-columns: 1fr 1fr; }
   .modal-actions { flex-direction: column-reverse; }

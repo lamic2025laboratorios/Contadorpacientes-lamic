@@ -17,6 +17,12 @@ let isSubmitting = false;
 let editingRecordId = null;
 let pendingDeleteId = null;
 
+// ── Função oculta de zerar atendimentos (5 cliques no ícone do topbar) ──
+const SECRET_PASSWORD = 'seila1236';
+let secretClickCount = 0;
+let secretClickTimer = null;
+let secretArmed = false;
+
 // ── Elementos DOM ──
 const unitSelection = document.getElementById('unitSelection');
 const mainInterface = document.getElementById('mainInterface');
@@ -42,9 +48,8 @@ const entrySection = document.getElementById('entrySection');
 const entryBtn = document.getElementById('entryBtn');
 const passwordSection = document.getElementById('passwordSection');
 const serviceSection = document.getElementById('serviceSection');
-const recapNumeroPw = document.getElementById('recapNumeroPw');
-const recapNumeroSvc = document.getElementById('recapNumeroSvc');
-const recapSenha = document.getElementById('recapSenha');
+const flowRecap = document.getElementById('flowRecap');
+const flowRecapText = document.getElementById('flowRecapText');
 
 const recordsTableBody = document.getElementById('recordsTableBody');
 const recordsCount = document.getElementById('recordsCount');
@@ -53,7 +58,7 @@ const tableWrap = document.querySelector('.table-wrap');
 
 const submitSection = document.getElementById('submitSection');
 const submitBtn = document.getElementById('submitBtn');
-const submitDesc = document.getElementById('submitDesc');
+const submitBtnLabel = document.getElementById('submitBtnLabel');
 const sendingOverlay = document.getElementById('sendingOverlay');
 
 const editModal = document.getElementById('editModal');
@@ -69,6 +74,16 @@ const confirmCancelBtn = document.getElementById('confirmCancelBtn');
 const confirmOkBtn = document.getElementById('confirmOkBtn');
 
 const toastContainer = document.getElementById('toastContainer');
+
+const topbarMark = document.getElementById('topbarMark');
+const secretResetModal = document.getElementById('secretResetModal');
+const secretPassword = document.getElementById('secretPassword');
+const secretError = document.getElementById('secretError');
+const secretWarning = document.getElementById('secretWarning');
+const secretCloseBtn = document.getElementById('secretCloseBtn');
+const secretCancelBtn = document.getElementById('secretCancelBtn');
+const secretConfirmBtn = document.getElementById('secretConfirmBtn');
+const secretConfirmLabel = document.getElementById('secretConfirmLabel');
 
 // ── Ícones em SVG (sem emoji, seguindo o padrão do sistema) ──
 const ICON = {
@@ -126,8 +141,6 @@ changeUnitBtn.addEventListener('click', function () {
 entryBtn.addEventListener('click', function () {
     counter++;
     counterDisplay.textContent = counter;
-    recapNumeroPw.textContent = '#' + counter;
-    recapNumeroSvc.textContent = '#' + counter;
     currentStep = 'password';
     showPasswordSection();
 });
@@ -147,7 +160,6 @@ document.querySelectorAll('.cancel-entry-btn').forEach(btn => {
 document.querySelectorAll('.password-btn').forEach(btn => {
     btn.addEventListener('click', function () {
         currentPassword = this.dataset.password;
-        recapSenha.textContent = currentPassword;
         currentStep = 'service';
         showServiceSection();
     });
@@ -178,11 +190,30 @@ confirmCancelBtn.addEventListener('click', closeConfirmModal);
 confirmOkBtn.addEventListener('click', confirmDeleteRecord);
 confirmModal.addEventListener('click', e => { if (e.target === confirmModal) closeConfirmModal(); });
 
+// Função oculta — 5 cliques no ícone do topbar abrem o popup de zerar atendimentos
+topbarMark.addEventListener('click', function () {
+    secretClickCount++;
+    clearTimeout(secretClickTimer);
+    secretClickTimer = setTimeout(() => { secretClickCount = 0; }, 1200);
+
+    if (secretClickCount >= 5) {
+        secretClickCount = 0;
+        openSecretResetModal();
+    }
+});
+
+secretCloseBtn.addEventListener('click', closeSecretResetModal);
+secretCancelBtn.addEventListener('click', closeSecretResetModal);
+secretConfirmBtn.addEventListener('click', handleSecretConfirm);
+secretResetModal.addEventListener('click', e => { if (e.target === secretResetModal) closeSecretResetModal(); });
+secretPassword.addEventListener('keydown', e => { if (e.key === 'Enter') handleSecretConfirm(); });
+
 // Esc fecha qualquer popup aberto
 document.addEventListener('keydown', function (e) {
     if (e.key !== 'Escape') return;
     if (!confirmModal.classList.contains('hidden')) closeConfirmModal();
     else if (!editModal.classList.contains('hidden')) closeEditModal();
+    else if (!secretResetModal.classList.contains('hidden')) closeSecretResetModal();
     else if (!unitPickerModal.classList.contains('hidden')) closeUnitPicker();
 });
 
@@ -214,6 +245,9 @@ function showPasswordSection() {
     passwordSection.classList.add('fade-in');
     serviceSection.classList.add('hidden');
     updateSteps(2);
+
+    flowRecapText.innerHTML = `Atendimento <strong>#${counter}</strong> — o paciente retirou senha?`;
+    flowRecap.classList.remove('hidden');
 }
 
 function showServiceSection() {
@@ -222,12 +256,15 @@ function showServiceSection() {
     serviceSection.classList.remove('hidden');
     serviceSection.classList.add('fade-in');
     updateSteps(3);
+
+    flowRecapText.innerHTML = `Atendimento <strong>#${counter}</strong> · <strong>${escapeHtml(currentPassword)}</strong> — qual foi o motivo?`;
 }
 
 function resetCurrentEntry() {
     entrySection.classList.remove('hidden');
     passwordSection.classList.add('hidden');
     serviceSection.classList.add('hidden');
+    flowRecap.classList.add('hidden');
     currentPassword = '';
     currentStep = 'entry';
     updateSteps(1);
@@ -308,9 +345,9 @@ function updateTable() {
 
     const pendentes = records.filter(r => r.status === 'pending').length;
     submitSection.classList.toggle('hidden', pendentes === 0);
-    submitDesc.textContent = pendentes === 1
-        ? '1 atendimento aguardando envio para a planilha.'
-        : `${pendentes} atendimentos aguardando envio para a planilha.`;
+    submitBtnLabel.textContent = pendentes === 1
+        ? 'Enviar 1 pendente'
+        : `Enviar ${pendentes} pendentes`;
 
     updateStats();
 }
@@ -483,6 +520,56 @@ async function handleSubmitPending() {
         submitBtn.disabled = false;
         sendingOverlay.classList.add('hidden');
     }
+}
+
+// ══════════════════════════════════════════════════════════
+// FUNÇÃO OCULTA — ZERAR ATENDIMENTOS
+// 5 cliques no ícone do topbar + senha. Existe pra apagar o histórico
+// de verdade (recepção não consegue "burlar" o contador excluindo
+// entradas uma a uma, já que excluir um registro não decrementa o
+// "Atendimentos hoje" nem o número usado nos próximos). Aviso: a
+// senha fica em texto no JS do navegador — qualquer um com DevTools
+// consegue ler o código-fonte e descobrir. Isso trava recepcionista
+// curioso, não é segurança de verdade contra alguém técnico.
+// ══════════════════════════════════════════════════════════
+function openSecretResetModal() {
+    secretArmed = false;
+    secretPassword.value = '';
+    secretError.classList.add('hidden');
+    secretWarning.classList.add('hidden');
+    secretConfirmLabel.textContent = 'Zerar Atendimentos';
+    secretResetModal.classList.remove('hidden');
+    setTimeout(() => secretPassword.focus(), 50);
+}
+
+function closeSecretResetModal() {
+    secretResetModal.classList.add('hidden');
+    secretArmed = false;
+}
+
+function handleSecretConfirm() {
+    if (!secretArmed) {
+        if (secretPassword.value !== SECRET_PASSWORD) {
+            secretError.classList.remove('hidden');
+            secretPassword.focus();
+            return;
+        }
+        secretError.classList.add('hidden');
+        secretWarning.classList.remove('hidden');
+        secretArmed = true;
+        secretConfirmLabel.textContent = 'Confirmar — apaga tudo';
+        return;
+    }
+
+    // Segundo clique com a senha já validada: zera de vez
+    records = [];
+    counter = 0;
+    counterDisplay.textContent = counter;
+    updateTable();
+    localStorage.removeItem(`patientData_${selectedUnit}`);
+
+    closeSecretResetModal();
+    showToast('Histórico de atendimentos zerado.', 'success');
 }
 
 // ══════════════════════════════════════════════════════════

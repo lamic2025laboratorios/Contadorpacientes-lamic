@@ -45,7 +45,7 @@
     </div>
 
     <!-- Popup — selecionar unidade (fundo embaçado, sem o cabeçalho escuro dos demais popups) -->
-    <div id="unitPickerModal" class="modal hidden">
+    <div id="unitPickerModal" class="modal solid-backdrop hidden">
         <div class="modal-content unit-picker-content">
             <div class="upm-head">
                 <div class="upm-title">
@@ -106,7 +106,7 @@
         <!-- Barra superior -->
         <div class="topbar">
             <div class="topbar-left">
-                <div class="topbar-mark">
+                <div id="topbarMark" class="topbar-mark">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/>
                     </svg>
@@ -177,7 +177,7 @@
             <div class="col-left">
 
             <!-- Fluxo de registro -->
-            <div class="panel">
+            <div class="panel panel-locked">
                 <div class="steps">
                     <div class="step" id="step1">
                         <div class="step-num">1</div>
@@ -195,6 +195,14 @@
                     </div>
                 </div>
 
+                <!-- Recap fixo: some no passo 1, aparece nos passos 2 e 3 -->
+                <div id="flowRecap" class="flow-recap hidden">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/>
+                    </svg>
+                    <span id="flowRecapText"></span>
+                </div>
+
                 <!-- Passo 1 -->
                 <div id="entrySection" class="panel-body flow-step">
                     <div class="entry-box">
@@ -210,12 +218,6 @@
 
                 <!-- Passo 2 -->
                 <div id="passwordSection" class="panel-body flow-step hidden">
-                    <div class="flow-recap">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M12 5v14M5 12h14"/>
-                        </svg>
-                        Atendimento <strong id="recapNumeroPw">#0</strong> — o paciente retirou senha?
-                    </div>
                     <div class="pw-grid">
                         <button class="pw-opt com password-btn" data-password="Com Senha">
                             <span class="pw-icon">
@@ -254,13 +256,6 @@
 
                 <!-- Passo 3 -->
                 <div id="serviceSection" class="panel-body flow-step hidden">
-                    <div class="flow-recap">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M20 6L9 17l-5-5"/>
-                        </svg>
-                        Atendimento <strong id="recapNumeroSvc">#0</strong> · <strong id="recapSenha">—</strong> — qual foi o motivo?
-                    </div>
-
                     <!-- Só esta lista rola — cabeçalho e "Cancelar" acima/abaixo ficam fixos -->
                     <div class="svc-scroll">
                         <div class="svc-group">
@@ -317,8 +312,8 @@
 
             <div class="col-right">
 
-            <!-- Tabela + envio (mesmo painel: botão de enviar fica embaixo, dentro da div) -->
-            <div class="panel">
+            <!-- Tabela + envio (mesmo painel: botão de enviar fica embaixo, bem discreto) -->
+            <div class="panel panel-locked">
                 <div class="panel-head">
                     <div class="panel-head-left">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -329,55 +324,45 @@
                     <span class="count-pill" id="recordsCount">0 registros</span>
                 </div>
 
-                <div class="table-wrap">
-                    <table class="data-table">
-                        <thead>
-                            <tr>
-                                <th>Nº</th>
-                                <th>Unidade</th>
-                                <th>Tipo de atendimento</th>
-                                <th>Senha</th>
-                                <th>Hora</th>
-                                <th>Status</th>
-                                <th style="text-align:right;">Ações</th>
-                            </tr>
-                        </thead>
-                        <tbody id="recordsTableBody"></tbody>
-                    </table>
-                </div>
-
-                <div id="noRecords" class="empty-state">
-                    <div class="empty-icon">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M22 12h-6l-2 3h-4l-2-3H2"/>
-                            <path d="M5.45 5.11L2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/>
-                        </svg>
+                <!-- O que passar da altura, rola só aqui dentro -->
+                <div class="table-scroll">
+                    <div class="table-wrap">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Nº</th>
+                                    <th>Unidade</th>
+                                    <th>Tipo de atendimento</th>
+                                    <th>Senha</th>
+                                    <th>Hora</th>
+                                    <th>Status</th>
+                                    <th style="text-align:right;">Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody id="recordsTableBody"></tbody>
+                        </table>
                     </div>
-                    <div class="empty-title">Nenhum atendimento registrado</div>
-                    <div class="empty-desc">Toque em "Nova Entrada" para registrar o primeiro paciente.</div>
-                </div>
 
-                <!-- Envio — dentro da mesma div do Registro de Atendimentos -->
-                <div id="submitSection" class="panel-foot hidden">
-                    <div class="submit-panel">
-                        <div class="submit-info">
-                            <div class="submit-info-icon">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                    <path d="M22 2L11 13"/><path d="M22 2l-7 20-4-9-9-4 20-7z"/>
-                                </svg>
-                            </div>
-                            <div>
-                                <div class="submit-title">Dados pendentes de envio</div>
-                                <div class="submit-desc" id="submitDesc">Nenhum registro pendente.</div>
-                            </div>
-                        </div>
-                        <button id="submitBtn" class="btn-success">
+                    <div id="noRecords" class="empty-state">
+                        <div class="empty-icon">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M17 8l-5-5-5 5"/><path d="M12 3v12"/>
+                                <path d="M22 12h-6l-2 3h-4l-2-3H2"/>
+                                <path d="M5.45 5.11L2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/>
                             </svg>
-                            Enviar dados pendentes
-                        </button>
+                        </div>
+                        <div class="empty-title">Nenhum atendimento registrado</div>
+                        <div class="empty-desc">Toque em "Nova Entrada" para registrar o primeiro paciente.</div>
                     </div>
+                </div>
+
+                <!-- Envio — só o botão, bem discreto, no finalzinho da div -->
+                <div id="submitSection" class="panel-foot hidden">
+                    <button id="submitBtn" class="btn-send-quiet">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M17 8l-5-5-5 5"/><path d="M12 3v12"/>
+                        </svg>
+                        <span id="submitBtnLabel">Enviar dados pendentes</span>
+                    </button>
                 </div>
             </div>
 
@@ -518,6 +503,55 @@
                         <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
                     </svg>
                     Excluir
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════════════════
+         POPUP OCULTO — zerar atendimentos (5 cliques no ícone do
+         topbar abrem este popup; exige senha)
+         ══════════════════════════════════════════════════════ -->
+    <div id="secretResetModal" class="modal hidden">
+        <div class="modal-content" style="max-width:400px;">
+            <div class="form-modal-header">
+                <div class="fmh-left">
+                    <div class="fmh-icon-box">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                        </svg>
+                    </div>
+                    <div class="fmh-name">Área Restrita</div>
+                </div>
+                <div class="fmh-right">
+                    <button id="secretCloseBtn" class="fmh-icon-btn" title="Fechar">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M18 6L6 18M6 6l12 12"/>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+            <div class="form-modal-stripe"></div>
+
+            <div class="form-modal-scroll">
+                <div class="form-group">
+                    <label for="secretPassword">Senha de acesso</label>
+                    <input type="password" id="secretPassword" class="input-light" placeholder="Digite a senha" autocomplete="off">
+                </div>
+                <div id="secretError" class="secret-error hidden">Senha incorreta.</div>
+                <div id="secretWarning" class="secret-warning hidden">
+                    Isso apaga <strong>todo o histórico de atendimentos</strong> desta unidade (enviados e pendentes) e zera o contador de hoje. Não pode ser desfeito. Clique em "Confirmar" de novo pra zerar.
+                </div>
+            </div>
+
+            <div class="modal-actions">
+                <button id="secretCancelBtn" class="btn-secondary">Cancelar</button>
+                <button id="secretConfirmBtn" class="btn-danger">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                        <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
+                    </svg>
+                    <span id="secretConfirmLabel">Zerar Atendimentos</span>
                 </button>
             </div>
         </div>
