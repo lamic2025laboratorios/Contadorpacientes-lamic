@@ -83,6 +83,9 @@ const submitBtnLabel = document.getElementById('submitBtnLabel');
 const sendingOverlay = document.getElementById('sendingOverlay');
 const sendingTitle = document.getElementById('sendingTitle');
 const sendingDesc = document.getElementById('sendingDesc');
+const sendingProgressTrack = document.getElementById('sendingProgressTrack');
+const sendingProgressFill = document.getElementById('sendingProgressFill');
+const sendingProgressLabel = document.getElementById('sendingProgressLabel');
 
 const editModal = document.getElementById('editModal');
 const editHeaderSub = document.getElementById('editHeaderSub');
@@ -507,11 +510,25 @@ function loadUnitData() {
 function showProcessingOverlay(title, desc) {
     sendingTitle.textContent = title;
     sendingDesc.textContent = desc;
+    // A barrinha só aparece quando o envio em lote chama atualizarProgressoEnvio
+    // (o "Registrando atendimento..." de um clique só não tem lote pra medir).
+    sendingProgressTrack.classList.add('hidden');
+    sendingProgressLabel.classList.add('hidden');
+    sendingProgressFill.style.width = '0%';
     sendingOverlay.classList.remove('hidden');
 }
 
 function hideProcessingOverlay() {
     sendingOverlay.classList.add('hidden');
+}
+
+// Mostra/atualiza a barrinha de progresso do envio em lote.
+function atualizarProgressoEnvio(atual, total) {
+    sendingProgressTrack.classList.remove('hidden');
+    sendingProgressLabel.classList.remove('hidden');
+    const pct = total ? Math.round((atual / total) * 100) : 0;
+    sendingProgressFill.style.width = pct + '%';
+    sendingProgressLabel.textContent = `${atual} de ${total} enviados`;
 }
 
 // Manda um registro pro Apps Script — UMA tentativa só, sempre em modo
@@ -548,6 +565,9 @@ async function handleSubmitPending() {
     // Apps Script), os outros continuam sendo enviados normalmente — antes,
     // uma falha no meio interrompia o laço inteiro e nenhum dos seguintes
     // era sequer tentado.
+    let enviados = 0;
+    atualizarProgressoEnvio(0, pendingRecords.length);
+
     for (const record of pendingRecords) {
         try {
             const formData = new FormData();
@@ -566,8 +586,15 @@ async function handleSubmitPending() {
             console.error('Erro ao enviar registro', record.id, erroEnvio);
         }
 
-        // Meio segundo entre envios para não sobrecarregar o Apps Script
-        await new Promise(resolve => setTimeout(resolve, 500));
+        enviados++;
+        atualizarProgressoEnvio(enviados, pendingRecords.length);
+
+        // Intervalo entre envios pra não sobrecarregar o Apps Script. Era
+        // 500ms — reduzido pra 150ms: o próprio fetch já espera a resposta
+        // completa do Google antes do laço seguir (então já não dá pra dois
+        // pedidos se sobreporem), esse intervalo é só uma folga extra entre
+        // um e outro. 150ms ainda deixa essa folga, só que ~3x mais rápido.
+        await new Promise(resolve => setTimeout(resolve, 150));
     }
 
     // Salva o estado real ANTES de decidir se zera algo — se sobrou

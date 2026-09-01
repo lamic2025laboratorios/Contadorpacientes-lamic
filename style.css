@@ -578,6 +578,17 @@ svg { flex-shrink: 0; }
 .sending-title { font-size: 1rem; font-weight: 700; color: var(--ink-900); }
 .sending-desc { font-size: .82rem; color: var(--ink-500); }
 
+.sending-progress-track {
+  width: 220px; height: 8px; border-radius: 999px;
+  background: var(--surf-border); overflow: hidden;
+}
+.sending-progress-fill {
+  height: 100%; width: 0%; border-radius: 999px;
+  background: var(--blue-400);
+  transition: width .25s ease;
+}
+.sending-progress-label { font-size: .76rem; font-weight: 600; color: var(--ink-500); }
+
 /* ══════════════════════════════════════════════════════════
    MODAIS — cabeçalho escuro + listra azul (padrão Inventário)
    ══════════════════════════════════════════════════════════ */

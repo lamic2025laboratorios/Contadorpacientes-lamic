@@ -563,6 +563,11 @@
             <div class="spinner spinner-lg"></div>
             <div id="sendingTitle" class="sending-title">Enviando dados...</div>
             <div id="sendingDesc" class="sending-desc">Aguarde, isso pode levar alguns segundos.</div>
+            <!-- Só aparece durante o envio em lote (ver atualizarProgressoEnvio) -->
+            <div id="sendingProgressTrack" class="sending-progress-track hidden">
+                <div id="sendingProgressFill" class="sending-progress-fill"></div>
+            </div>
+            <div id="sendingProgressLabel" class="sending-progress-label hidden"></div>
         </div>
     </div>
 
@@ -573,6 +578,6 @@
          arquivo de novo em vez de servir uma cópia em cache — sem isso, uma
          correção pode ficar até 10 min "invisível" mesmo já publicada.
          Bump o número toda vez que mexer em script.js. -->
-    <script src="script.js?v=3"></script>
+    <script src="script.js?v=4"></script>
 </body>
 </html>
