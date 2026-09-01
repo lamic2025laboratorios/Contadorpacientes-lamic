@@ -569,6 +569,10 @@
     <!-- Toasts -->
     <div id="toastContainer" class="toast-container"></div>
 
-    <script src="script.js"></script>
+    <!-- O "?v=" força o navegador (e a CDN do GitHub Pages) a buscar o
+         arquivo de novo em vez de servir uma cópia em cache — sem isso, uma
+         correção pode ficar até 10 min "invisível" mesmo já publicada.
+         Bump o número toda vez que mexer em script.js. -->
+    <script src="script.js?v=2"></script>
 </body>
 </html>
