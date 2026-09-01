@@ -514,26 +514,18 @@ function hideProcessingOverlay() {
     sendingOverlay.classList.add('hidden');
 }
 
-// Manda um registro pro Apps Script. Tenta primeiro do jeito NORMAL (modo
-// 'cors', que deixa a gente checar response.ok e detectar um erro real do
-// servidor) — só cai pro modo à prova de bloqueio se o navegador travar o
-// pedido com CORS, o que só acontece nalgumas máquinas/versões de Chrome
-// (o /exec do Apps Script redireciona pra um googleusercontent.com que não
-// manda cabeçalho CORS, e certos navegadores bloqueiam esse redirecionamento
-// com "no Access-Control-Allow-Origin header" — foi o que aconteceu numa
-// unidade específica). Assim, quem já funciona continua com a checagem de
-// erro de verdade; só quem trava passa a usar o modo cego, sem mexer em
-// nada pra ninguém que já estava bem.
+// Manda um registro pro Apps Script — UMA tentativa só, sempre em modo
+// 'no-cors'. Nada de "tenta normal, e se falhar tenta nocors": um bloqueio
+// de CORS acontece DEPOIS que o Google já recebeu e já processou o pedido —
+// o navegador só impede o JavaScript de LER a resposta, não impede o envio.
+// Então reenviar depois de um erro de CORS manda o mesmo registro DE NOVO,
+// duplicando a linha na planilha (foi exatamente o que aconteceu). Por isso
+// nunca há um segundo fetch aqui: um envio, sempre no-cors, sem tentar de
+// novo por conta própria. Em troca de nunca duplicar, a gente aceita não
+// conseguir ler a resposta real do Apps Script (status sempre 0, ok sempre
+// false em modo no-cors) — se o fetch não jogar exceção, o pedido saiu.
 async function enviarRegistroAoSheets(formData) {
-    try {
-        const response = await fetch(ENDPOINT, { method: 'POST', body: formData });
-        if (!response.ok) throw new Error('Apps Script respondeu HTTP ' + response.status);
-    } catch (erroCors) {
-        // mode:'no-cors': o pedido chega mesmo assim, mas a resposta vem
-        // "opaca" (status sempre 0, ok sempre false) — não dá pra ler o
-        // resultado real. Se o fetch não jogar exceção aqui, o pedido saiu.
-        await fetch(ENDPOINT, { method: 'POST', mode: 'no-cors', body: formData });
-    }
+    await fetch(ENDPOINT, { method: 'POST', mode: 'no-cors', body: formData });
 }
 
 // ══════════════════════════════════════════════════════════
