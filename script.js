@@ -514,6 +514,28 @@ function hideProcessingOverlay() {
     sendingOverlay.classList.add('hidden');
 }
 
+// Manda um registro pro Apps Script. Tenta primeiro do jeito NORMAL (modo
+// 'cors', que deixa a gente checar response.ok e detectar um erro real do
+// servidor) — só cai pro modo à prova de bloqueio se o navegador travar o
+// pedido com CORS, o que só acontece nalgumas máquinas/versões de Chrome
+// (o /exec do Apps Script redireciona pra um googleusercontent.com que não
+// manda cabeçalho CORS, e certos navegadores bloqueiam esse redirecionamento
+// com "no Access-Control-Allow-Origin header" — foi o que aconteceu numa
+// unidade específica). Assim, quem já funciona continua com a checagem de
+// erro de verdade; só quem trava passa a usar o modo cego, sem mexer em
+// nada pra ninguém que já estava bem.
+async function enviarRegistroAoSheets(formData) {
+    try {
+        const response = await fetch(ENDPOINT, { method: 'POST', body: formData });
+        if (!response.ok) throw new Error('Apps Script respondeu HTTP ' + response.status);
+    } catch (erroCors) {
+        // mode:'no-cors': o pedido chega mesmo assim, mas a resposta vem
+        // "opaca" (status sempre 0, ok sempre false) — não dá pra ler o
+        // resultado real. Se o fetch não jogar exceção aqui, o pedido saiu.
+        await fetch(ENDPOINT, { method: 'POST', mode: 'no-cors', body: formData });
+    }
+}
+
 // ══════════════════════════════════════════════════════════
 // ENVIO PARA A PLANILHA
 // ══════════════════════════════════════════════════════════
@@ -530,8 +552,12 @@ async function handleSubmitPending() {
     submitBtn.disabled = true;
     showProcessingOverlay('Enviando dados...', 'Aguarde, isso pode levar alguns segundos.');
 
-    try {
-        for (const record of pendingRecords) {
+    // Cada registro é tentado isoladamente: se um falhar (rede/CORS/erro do
+    // Apps Script), os outros continuam sendo enviados normalmente — antes,
+    // uma falha no meio interrompia o laço inteiro e nenhum dos seguintes
+    // era sequer tentado.
+    for (const record of pendingRecords) {
+        try {
             const formData = new FormData();
             formData.append('numero', record.numero);
             formData.append('unidade', selectedUnit);
@@ -540,34 +566,40 @@ async function handleSubmitPending() {
             formData.append('data', record.data);
             formData.append('hora', record.hora);
 
-            const response = await fetch(ENDPOINT, { method: 'POST', body: formData });
+            await enviarRegistroAoSheets(formData);
 
-            if (response.ok) {
-                const index = records.findIndex(r => r.id === record.id);
-                if (index !== -1) records[index].status = 'sent';
-            }
-
-            // Meio segundo entre envios para não sobrecarregar o Apps Script
-            await new Promise(resolve => setTimeout(resolve, 500));
+            const index = records.findIndex(r => r.id === record.id);
+            if (index !== -1) records[index].status = 'sent';
+        } catch (erroEnvio) {
+            console.error('Erro ao enviar registro', record.id, erroEnvio);
         }
 
-        // Envio concluído: zera o dia da unidade
+        // Meio segundo entre envios para não sobrecarregar o Apps Script
+        await new Promise(resolve => setTimeout(resolve, 500));
+    }
+
+    // Salva o estado real ANTES de decidir se zera algo — se sobrou
+    // pendente, ele fica salvo, nunca é jogado fora silenciosamente.
+    saveUnitData();
+    updateTable();
+
+    const restam = records.filter(r => r.status === 'pending').length;
+    if (restam === 0) {
         records = [];
         counter = 0;
         counterDisplay.textContent = counter;
         updateTable();
         localStorage.removeItem(`patientData_${selectedUnit}`);
-
         showToast('Todos os dados foram enviados com sucesso!', 'success');
-
-    } catch (error) {
-        console.error('Erro ao enviar dados:', error);
+    } else if (restam < pendingRecords.length) {
+        showToast(`${pendingRecords.length - restam} enviado(s), mas ${restam} falharam. Tente enviar de novo.`, 'error');
+    } else {
         showToast('Erro ao enviar dados. Tente novamente.', 'error');
-    } finally {
-        isSubmitting = false;
-        submitBtn.disabled = false;
-        hideProcessingOverlay();
     }
+
+    isSubmitting = false;
+    submitBtn.disabled = false;
+    hideProcessingOverlay();
 }
 
 // ══════════════════════════════════════════════════════════
